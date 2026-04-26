@@ -1,0 +1,6 @@
+{
+    "cutoffDate": "2013-01-01 00:00:00",
+    "loadConfigPath": "/dags/process_wwi_load_2013-01-01.json",
+    "warehouseConfigPath": "/dags/process_wwi_warehouse_2013-01-01.json",
+    "newCutoffDate": ""
+}
