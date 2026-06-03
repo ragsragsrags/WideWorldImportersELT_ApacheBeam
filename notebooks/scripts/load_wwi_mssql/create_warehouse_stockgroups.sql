@@ -16,9 +16,22 @@ IF NOT EXISTS
         [StockGroupID] [int] NOT NULL,
         [StockGroupName] [nvarchar](50) NOT NULL,
         [LastEditedBy] [int] NOT NULL,
-        [ValidFrom] [datetime2](7),
-        [ValidTo] [datetime2](7), 
-		[LoadDate] DATETIME2(7) NOT NULL
+        [ValidFrom] [datetime2](6),
+        [ValidTo] [datetime2](6), 
+		[LoadDate] DATETIME2(6) NOT NULL
     )
 
-	END
+	END;
+
+DELETE 
+    [<< Schema >>].[<< Table >>] 
+WHERE
+    LoadDate > (
+		SELECT
+			MAX([LoadDate])
+		FROM
+			[<< LHSchema >>].[<< LHTable >>]
+		WHERE
+			[TableName] = '<< TableName >>' AND
+			[Status] = 'Successful'
+	);

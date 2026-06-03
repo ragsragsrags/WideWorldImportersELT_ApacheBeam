@@ -13,7 +13,7 @@ BEGIN
 
 END
 
-INSERT INTO [dbo].[DimDates]
+INSERT INTO {{ DimDates }}
 (
     [Date],
     [DayNumber],
@@ -65,7 +65,7 @@ FROM
             [Date] = CAST([value] AS [Date])
         FROM
             string_split(@dates, ',') D LEFT JOIN
-            [dbo].[DimDates] DD ON
+            {{ DimDates }} DD ON
                 CAST([value] AS [Date]) = DD.[Date]
         WHERE
             D.[value] != '' AND

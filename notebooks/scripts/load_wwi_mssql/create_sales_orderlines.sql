@@ -22,10 +22,23 @@ IF NOT EXISTS
         [UnitPrice] [decimal](18, 2) NULL,
         [TaxRate] [decimal](18, 3) NOT NULL,
         [PickedQuantity] [int] NOT NULL,
-        [PickingCompletedWhen] [datetime2](7) NULL,
+        [PickingCompletedWhen] [datetime2](6) NULL,
         [LastEditedBy] [int] NOT NULL,
-        [LastEditedWhen] [datetime2](7) NOT NULL,
-		[LoadDate] DATETIME2(7) NOT NULL
+        [LastEditedWhen] [datetime2](6) NOT NULL,
+		[LoadDate] DATETIME2(6) NOT NULL
     )
 
-	END
+	END;
+
+DELETE 
+    [<< Schema >>].[<< Table >>] 
+WHERE
+    LoadDate > (
+		SELECT
+			MAX([LoadDate])
+		FROM
+			[<< LHSchema >>].[<< LHTable >>]
+		WHERE
+			[TableName] = '<< TableName >>' AND
+			[Status] = 'Successful'
+	);

@@ -1,22 +1,46 @@
 {
     "initialCutoffDate": "2012-12-31 00:00:00",
     "cutoffDate": "2013-01-01 00:00:00",
-    "gcpCredential": "/resources/credentials/bigquery_token.json",
+    "gcpCredential": "../resources/credentials/bigquery_token.json",
+    "sparkMaster": "local[*]",
+    "sparkJars": "../resources/jars/mssql-jdbc-13.2.0.jre11.jar",
+    "sparkExecutorMemory": "3g",
+    "sparkDriverMemory": "3g",
+    "sparkExecutorCores": "2",
+    "sparkCoresMax": "2",
+    "sparkNetworkTimeout": "600s",
+    "sparkExecutorHeartBeatInterval": "599s",
+    "runner": "DirectRunner",
+    "runnerOptions": {
+        "DirectRunner": [
+            "--runner=DirectRunner"
+        ],
+        "PortableRunner": [
+            "--runner=PortableRunner",
+            "--job_endpoint=beam-job-server:8099",
+            "--artifact_endpoint=beam-job-server:8098",
+            "--environment_type=EXTERNAL",
+            "--environment_config=beam-python-workers:50000"
+        ]
+    },
     "source": {
-        "databaseType": "mssql",
-        "conn": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;DATABASE=WideWorldImporters;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
+        "databaseType": "spark-mssql",
+        "conn": "jdbc:sqlserver://localhost;database=WideWorldImporters;user=sa;password=PP@$$w0rd;encrypt=false",
+        "conn_mssql": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;DATABASE=WideWorldImporters;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
     },
     "destination": {
-        "databaseType": "mssql",
+        "databaseType": "spark-mssql",
         "database": "WideWorldImportersDW",
-        "conn": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;DATABASE=WideWorldImportersDW;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
+        "conn": "jdbc:sqlserver://localhost;database=WideWorldImportersDW;user=sa;password=PP@$$w0rd;encrypt=false",
+        "conn_mssql": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;DATABASE=WideWorldImportersDW;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
     },
     "loadHistory": {
         "schema": "dbo",
         "table": "LoadHistory",
         "createLoadHistoryTable": "scripts/load_wwi_mssql/create_load_history.sql",
         "insertLoadHistoryTable": "scripts/load_wwi_mssql/insert_load_history.sql",
-        "loadLastCutoffDateLoadHistoryTable": "scripts/load_wwi_mssql/load_last_cutoff_date_load_history.sql"
+        "loadLastCutoffDateLoadHistoryTable": "scripts/load_wwi_mssql/load_last_cutoff_date_load_history.sql",
+        "loadLastCutoffDatesTable": "scripts/load_wwi_mssql/load_last_cutoff_dates.sql"
     },
     "modifyLoadHistory": {
         "schema": "dbo",
@@ -50,8 +74,8 @@
                         "typeCast": "CAST(? AS VARBINARY(MAX))"
                     }
                 ],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_application_cities_2013-01-01.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_cities_2013-01-01.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -77,8 +101,8 @@
                         "typeCast": "CAST(? AS VARBINARY(MAX))"
                     }
                 ],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_application_cities_2013-01-01.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_cities_2013-01-01.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -104,8 +128,8 @@
                         "typeCast": "CAST(? AS VARBINARY(MAX))"
                     }
                 ],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_application_countries.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_countries.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -131,8 +155,8 @@
                         "typeCast": "CAST(? AS VARBINARY(MAX))"
                     }
                 ],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_application_countries.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_countries.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -152,8 +176,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_application_deliverymethods.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_deliverymethods.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -173,8 +197,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_application_deliverymethods.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_deliverymethods.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -194,8 +218,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_application_paymentmethods.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_paymentmethods.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -215,8 +239,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_application_paymentmethods.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_paymentmethods.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -236,8 +260,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_application_people.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_people.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -257,8 +281,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_application_people.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_people.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -278,8 +302,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_application_stateprovinces.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_stateprovinces.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -299,8 +323,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_application_stateprovinces.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_stateprovinces.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -320,8 +344,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_application_transactiontypes.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_transactiontypes.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -341,8 +365,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_application_transactiontypes.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_transactiontypes.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -362,8 +386,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_purchasing_purchaseorderlines.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_purchasing_purchaseorderlines.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -383,8 +407,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_purchasing_purchaseorders.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_purchasing_purchaseorders.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -404,8 +428,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_purchasing_suppliercategories.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_purchasing_suppliercategories.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -425,8 +449,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_purchasing_suppliercategories.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_purchasing_suppliercategories.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -452,8 +476,8 @@
                         "typeCast": "CAST(? AS VARBINARY(MAX))"
                     }
                 ],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_purchasing_suppliers.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_purchasing_suppliers.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -479,8 +503,8 @@
                         "typeCast": "CAST(? AS VARBINARY(MAX))"
                     }
                 ],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_purchasing_suppliers.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_purchasing_suppliers.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -500,8 +524,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_purchasing_suppliertransactions.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_purchasing_suppliertransactions.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -521,8 +545,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_sales_buyinggroups.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_sales_buyinggroups.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -542,8 +566,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_sales_buyinggroups.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_sales_buyinggroups.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -563,8 +587,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_sales_customercategories.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_sales_customercategories.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -584,8 +608,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_sales_customercategories.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_sales_customercategories.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -611,8 +635,8 @@
                         "typeCast": "CAST(? AS VARBINARY(MAX))"
                     }
                 ],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_sales_customers.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_sales_customers.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -638,8 +662,8 @@
                         "typeCast": "CAST(? AS VARBINARY(MAX))"
                     }
                 ],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_sales_customers.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_sales_customers.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -659,8 +683,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_sales_customertransactions.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_sales_customertransactions.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -680,8 +704,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_sales_invoicelines.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_sales_invoicelines.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -701,8 +725,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_sales_invoices.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_sales_invoices.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -722,8 +746,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_sales_orderlines.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_sales_orderlines.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -743,8 +767,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_sales_orders.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_sales_orders.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -764,8 +788,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_warehouse_colors.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_warehouse_colors.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -785,8 +809,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_warehouse_colors.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_warehouse_colors.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -806,8 +830,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_warehouse_packagetypes.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_warehouse_packagetypes.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -827,8 +851,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_warehouse_packagetypes.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_warehouse_packagetypes.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -848,8 +872,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_warehouse_stockgroups.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_warehouse_stockgroups.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -869,8 +893,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_warehouse_stockgroups.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_warehouse_stockgroups.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -890,8 +914,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_warehouse_stockitemholdings.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_warehouse_stockitemholdings.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -911,8 +935,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_warehouse_stockitems.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_warehouse_stockitems.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -932,8 +956,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_warehouse_stockitems.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_warehouse_stockitems.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
         {
@@ -953,8 +977,8 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_warehouse_stockitemstockgroups.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_warehouse_stockitemstockgroups.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -974,11 +998,12 @@
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "deleteByLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "scripts/load_wwi_mssql/test/load_warehouse_stockitemtransactions.sql",
-                "testCountTable": "scripts/load_wwi_mssql/test/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_warehouse_stockitemtransactions.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
             }
         }
     ],
     "test": true,
-    "testRecordCount": 1000
+    "testRecordCount": 10,
+    "loadTableExists": "scripts/load_wwi_mssql/load_table_exists.sql"
 }

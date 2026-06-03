@@ -28,10 +28,10 @@ SELECT
                     [Warehouse_IsOrderFinalized] = FP.[IsOrderFinalized],
                     [Warehouse_LoadDate] = FP.[LoadDate]
                 FROM 
-                    [dbo].[FctPurchases] FP LEFT JOIN
-                    [dbo].[DimSuppliers] DS ON
+                    {{ FctPurchases }} FP LEFT JOIN
+                    {{ DimSuppliers }} DS ON
                         FP.SupplierKey = DS.SupplierKey LEFT JOIN
-                    [dbo].[DimStockItems] DSI ON
+                    {{ DimStockItems }} DSI ON
                         FP.StockItemKey = DSI.StockItemKey 
                 WHERE 
                     FP.[LoadDate] = ''<< NewCutoffDate >>''
@@ -50,8 +50,8 @@ SELECT
                     [Original_IsOrderFinalized] = PO.IsOrderFinalized,
                     [Original_LoadDate] = ''<< NewCutoffDate >>''
                 FROM
-                    [dbo].[Purchasing_PurchaseOrders] PO LEFT JOIN
-                    [dbo].[Purchasing_PurchaseOrderLines] POL ON
+                    {{ PurchasingPurchaseOrders }} PO LEFT JOIN
+                    {{ PurchasingPurchaseOrderLines }} POL ON
                         POL.PurchaseOrderID = PO.PurchaseOrderID LEFT JOIN
                     (
                         SELECT 
@@ -211,10 +211,10 @@ FROM
                     [Warehouse_IsOrderFinalized] = FP.[IsOrderFinalized],
                     [Warehouse_LoadDate] = FP.[LoadDate]
                 FROM 
-                    [dbo].[FctPurchases] FP LEFT JOIN
-                    [dbo].[DimSuppliers] DS ON
+                    {{ FctPurchases }} FP LEFT JOIN
+                    {{ DimSuppliers }} DS ON
                         FP.SupplierKey = DS.SupplierKey LEFT JOIN
-                    [dbo].[DimStockItems] DSI ON
+                    {{ DimStockItems }} DSI ON
                         FP.StockItemKey = DSI.StockItemKey 
                 WHERE 
                     FP.[LoadDate] = '<< NewCutoffDate >>'
@@ -233,8 +233,8 @@ FROM
                     [Original_IsOrderFinalized] = PO.IsOrderFinalized,
                     [Original_LoadDate] = '<< NewCutoffDate >>'
                 FROM
-                    [dbo].[Purchasing_PurchaseOrders] PO LEFT JOIN
-                    [dbo].[Purchasing_PurchaseOrderLines] POL ON
+                    {{ PurchasingPurchaseOrders }} PO LEFT JOIN
+                    {{ PurchasingPurchaseOrderLines }} POL ON
                         POL.PurchaseOrderID = PO.PurchaseOrderID LEFT JOIN
                     (
                         SELECT 

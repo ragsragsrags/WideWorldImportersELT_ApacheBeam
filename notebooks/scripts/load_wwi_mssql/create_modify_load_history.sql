@@ -14,11 +14,11 @@ IF NOT EXISTS
 	CREATE TABLE [<< Schema >>].[<< Table >>] 
 	(
 		TableName NVARCHAR(50), 
-		LoadDate DATETIME2(7), 
+		LoadDate DATETIME2(6), 
 		Status NVARCHAR(50), 
 		Details NVARCHAR(1000),
         ScriptName NVARCHAR(100),
-		ProcessedDate DATETIME2(7)
+		ProcessedDate DATETIME2(6)
 	)
 
 	END

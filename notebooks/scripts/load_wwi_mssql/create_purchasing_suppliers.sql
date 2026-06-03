@@ -40,9 +40,22 @@ IF NOT EXISTS
         [PostalAddressLine2] [nvarchar](60) NULL,
         [PostalPostalCode] [nvarchar](10) NOT NULL,
         [LastEditedBy] [int] NOT NULL,
-        [ValidFrom] [datetime2](7) NOT NULL,
-        [ValidTo] [datetime2](7) NOT NULL,
-        [LoadDate] [datetime2](7) NOT NULL
+        [ValidFrom] [datetime2](6) NOT NULL,
+        [ValidTo] [datetime2](6) NOT NULL,
+        [LoadDate] [datetime2](6) NOT NULL
 	)
 
-	END
+	END;
+
+DELETE 
+    [<< Schema >>].[<< Table >>] 
+WHERE
+    LoadDate > (
+		SELECT
+			MAX([LoadDate])
+		FROM
+			[<< LHSchema >>].[<< LHTable >>]
+		WHERE
+			[TableName] = '<< TableName >>' AND
+			[Status] = 'Successful'
+	);

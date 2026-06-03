@@ -7,7 +7,7 @@ SELECT
     LastEditedBy, 
     ValidFrom, 
     ValidTo,
-    LoadDate = CAST('<< NewCutoffDate >>' AS DATETIME2(7)),
+    LoadDate = CAST('<< NewCutoffDate >>' AS DATETIME2(6)),
     NewColumn
 FROM
     [<< Schema >>].[<< Table >>]
@@ -18,3 +18,4 @@ ORDER BY
     CityID,
     ValidFrom,
     ValidTo
+OFFSET 0 ROW

@@ -11,3 +11,4 @@ ORDER BY
     CityID,
     ValidFrom,
     ValidTo
+OFFSET 0 ROW

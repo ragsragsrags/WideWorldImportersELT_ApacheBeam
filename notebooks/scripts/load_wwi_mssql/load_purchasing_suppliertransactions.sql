@@ -14,7 +14,7 @@ SELECT
     [IsFinalized],
     [LastEditedBy],
     [LastEditedWhen],
-    [LoadDate] = CAST('<< NewCutoffDate >>' AS DATETIME2(7))
+    [LoadDate] = CAST('<< NewCutoffDate >>' AS DATETIME2(6))
 FROM
     [<< Schema >>].[<< Table >>]
 WHERE
@@ -23,3 +23,5 @@ WHERE
 ORDER BY
     SupplierTransactionID,
     LastEditedWhen
+
+OFFSET 0 ROW

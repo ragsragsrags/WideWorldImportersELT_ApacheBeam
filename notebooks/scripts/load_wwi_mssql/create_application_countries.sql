@@ -25,9 +25,22 @@ IF NOT EXISTS
         [Subregion] NVARCHAR(30) NOT NULL,
         [Border] GEOGRAPHY NULL,
         [LastEditedBy] INT NOT NULL,
-        [ValidFrom] DATETIME2(7) NOT NULL,
-        [ValidTo] DATETIME2(7) NOT NULL, 
-		[LoadDate] DATETIME2(7) NOT NULL
+        [ValidFrom] DATETIME2(6) NOT NULL,
+        [ValidTo] DATETIME2(6) NOT NULL, 
+		[LoadDate] DATETIME2(6) NOT NULL
     )
 
-	END
+	END;
+
+DELETE 
+    [<< Schema >>].[<< Table >>] 
+WHERE
+    LoadDate > (
+		SELECT
+			MAX([LoadDate])
+		FROM
+			[<< LHSchema >>].[<< LHTable >>]
+		WHERE
+			[TableName] = '<< TableName >>' AND
+			[Status] = 'Successful'
+	);

@@ -27,4 +27,4 @@ IF NOT EXISTS
         [LoadDate] [datetime2](7) NOT NULL
     )
 
-	END
+	END;

@@ -16,9 +16,22 @@ IF NOT EXISTS
 		[BuyingGroupID] [int] NOT NULL,
         [BuyingGroupName] [nvarchar](50) NOT NULL,
         [LastEditedBy] [int] NOT NULL,
-        [ValidFrom] [datetime2](7) NOT NULL,
-        [ValidTo] [datetime2](7) NOT NULL, 
-		LoadDate DATETIME2(7) NOT NULL
+        [ValidFrom] [datetime2](6) NOT NULL,
+        [ValidTo] [datetime2](6) NOT NULL, 
+		LoadDate DATETIME2(6) NOT NULL
 	)
 
-	END
+	END;
+
+DELETE 
+    [<< Schema >>].[<< Table >>] 
+WHERE
+    LoadDate > (
+		SELECT
+			MAX([LoadDate])
+		FROM
+			[<< LHSchema >>].[<< LHTable >>]
+		WHERE
+			[TableName] = '<< TableName >>' AND
+			[Status] = 'Successful'
+	);

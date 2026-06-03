@@ -34,7 +34,7 @@ SELECT
                     [Warehouse_Photo] = DSI.[Photo],
                     [Warehouse_LoadDate] = DSI.[LoadDate]
                 FROM 
-                    [dbo].[DimStockItems] DSI
+                    {{ DimStockItems }} DSI
                 WHERE 
                     DSI.[LoadDate] = ''<< NewCutoffDate >>'' AND 
                     DSI.[StockItemKey] != 0 
@@ -300,7 +300,7 @@ FROM
                     [Warehouse_Photo] = DSI.[Photo],
                     [Warehouse_LoadDate] = DSI.[LoadDate]
                 FROM 
-                    [dbo].[DimStockItems] DSI
+                    {{ DimStockItems }} DSI
                 WHERE 
                     DSI.[LoadDate] = '<< NewCutoffDate >>' AND 
                     DSI.[StockItemKey] != 0 

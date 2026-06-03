@@ -10,7 +10,7 @@ INSERT INTO [<< Schema >>].[<< Table >>]
 VALUES
 (
     '<< TableName >>', 
-    '<< LoadDate >>', 
+    '<< LastCutoffDate >>', 
     '<< Status >>', 
     '<< Details >>',
     '<< ScriptName >>',

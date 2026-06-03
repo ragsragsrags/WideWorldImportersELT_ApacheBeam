@@ -12,7 +12,7 @@ SELECT
     [ExtendedPrice],
     [LastEditedBy],
     [LastEditedWhen], 
-    [LoadDate] = CAST('<< NewCutoffDate >>' AS DATETIME2(7))
+    [LoadDate] = CAST('<< NewCutoffDate >>' AS DATETIME2(6))
 FROM
     [<< Schema >>].[<< Table >>]
 WHERE
@@ -22,3 +22,5 @@ ORDER BY
     InvoiceID,
     InvoiceLineID,
     LastEditedWhen
+
+OFFSET 0 ROW

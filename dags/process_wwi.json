@@ -1,6 +1,9 @@
 {
-    "cutoffDate": "2013-01-01 00:00:00",
-    "loadConfigPath": "/dags/process_wwi_load_2013-01-01.json",
-    "warehouseConfigPath": "/dags/process_wwi_warehouse_2013-01-01.json",
-    "newCutoffDate": ""
+    "cutoffDate": "2014-01-01 00:00:00",
+    "loadConfigPath": "/dags/process_wwi_load_bigquery_2014-01-01.json",
+    "warehouseConfigPath": "/dags/process_wwi_warehouse_bigquery_2014-01-01.json",
+    "noOfLoadTablesPerProcess": 23,
+    "noOfWarehouseDimensionTablesPerProcess": 4,
+    "noOfWarehouseFactTablesPerProcess": 3,
+    "newCutoffDate": "2014-01-01 00:00:00"
 }

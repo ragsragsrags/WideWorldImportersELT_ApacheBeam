@@ -84,7 +84,7 @@ primaryContactsAvailable AS
 		P.PersonID,
 		P.FullName
 	FROM
-		dbo.Application_People P
+		{{ ApplicationPeople }} P
 	WHERE
 		'<< NewCutoffDate >>' BETWEEN P.ValidFrom AND P.ValidTo
 
@@ -94,7 +94,7 @@ primaryContactsAvailable AS
 		PA.PersonID,
 		PA.FullName
 	FROM
-		dbo.Application_People_Archive PA
+		{{ ApplicationPeopleArchive }} PA
 	WHERE
 		'<< NewCutoffDate >>' BETWEEN PA.ValidFrom AND PA.ValidTo
 

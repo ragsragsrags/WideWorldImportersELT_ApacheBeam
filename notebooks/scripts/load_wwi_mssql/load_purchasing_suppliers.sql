@@ -28,7 +28,7 @@ SELECT
     [LastEditedBy],
     [ValidFrom],
     [ValidTo],
-    [LoadDate] = CAST('<< NewCutoffDate >>' AS DATETIME2(7))
+    [LoadDate] = CAST('<< NewCutoffDate >>' AS DATETIME2(6))
 FROM
     [<< Schema >>].[<< Table >>]
 WHERE
@@ -38,3 +38,5 @@ ORDER BY
     SupplierID,
     ValidFrom,
     ValidTo
+
+OFFSET 0 ROW
