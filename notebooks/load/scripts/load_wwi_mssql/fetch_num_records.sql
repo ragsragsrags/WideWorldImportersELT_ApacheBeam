@@ -1,0 +1,1 @@
+FETCH NEXT << NumberOfRows >> ROWS ONLY

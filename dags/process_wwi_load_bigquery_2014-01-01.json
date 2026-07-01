@@ -10,6 +10,7 @@
     "sparkCoresMax": "2",
     "sparkNetworkTimeout": "600s",
     "sparkExecutorHeartBeatInterval": "599s",
+    "isRollback": false, 
     "runner": "DirectRunner",
     "runnerOptions": {
         "DirectRunner": [
@@ -35,18 +36,33 @@
     "loadHistory": {
         "schema": "WideWorldImporters2",
         "table": "LoadHistory",
-        "createLoadHistoryTable": "notebooks/scripts/load_wwi_bigquery/create_load_history.sql",
-        "insertLoadHistoryTable": "notebooks/scripts/load_wwi_bigquery/insert_load_history.sql",
-        "loadLastCutoffDateLoadHistoryTable": "notebooks/scripts/load_wwi_bigquery/load_last_cutoff_date_load_history.sql",
-        "loadLastCutoffDatesTable": "notebooks/scripts/load_wwi_bigquery/load_last_cutoff_dates.sql"
+        "createLoadHistoryTable": "scripts/load_wwi_bigquery/create_load_history.sql",
+        "insertLoadHistoryTable": "scripts/load_wwi_bigquery/insert_load_history.sql",
+        "loadLastCutoffDateLoadHistoryTable": "scripts/load_wwi_bigquery/load_last_cutoff_date_load_history.sql",
+        "loadLastCutoffDatesTable": "scripts/load_wwi_bigquery/load_last_cutoff_dates.sql",
+        "loadLoadHistoriesForRollback": "scripts/load_wwi_bigquery/load_load_histories_for_rollback.sql",
+        "updateLoadHistoryLastRolledBackProcessedDateTable": "scripts/load_wwi_bigquery/update_load_history_last_rolled_back_processed_date.sql"
+    },
+    "loadHistoryDate": {
+        "schema": "WideWorldImporters2",
+        "table": "LoadHistoryDate",
+        "createLoadHistoryDateTable": "scripts/load_wwi_bigquery/create_load_history_date.sql",
+        "insertLoadHistoryDateTable": "scripts/load_wwi_bigquery/insert_load_history_date.sql",
+        "loadLoadHistoryDateTable": "scripts/load_wwi_bigquery/load_load_history_date_by_loaddate.sql",
+        "deleteLoadHistoryDatesForRollback": "scripts/load_wwi_bigquery/delete_load_history_dates_for_rollback.sql"
     },
     "modifyLoadHistory": {
         "schema": "WideWorldImporters2",
         "table": "ModifyLoadHistory",
-        "createModifyLoadHistoryTable": "notebooks/scripts/load_wwi_bigquery/create_modify_load_history.sql",
-        "insertModifyLoadHistoryTable": "notebooks/scripts/load_wwi_bigquery/insert_modify_load_history.sql",
-        "loadUnprocessedModifyLoadHistoryTable": "notebooks/scripts/load_wwi_bigquery/load_unprocessed_modify_load_history.sql",
-        "loadUnprocessedModifyLoadHistoryScriptTable": "notebooks/scripts/load_wwi_bigquery/load_unprocessed_modify_load_history_script.sql"
+        "createModifyLoadHistoryTable": "scripts/load_wwi_bigquery/create_modify_load_history.sql",
+        "insertModifyLoadHistoryTable": "scripts/load_wwi_bigquery/insert_modify_load_history.sql",
+        "loadUnprocessedModifyLoadHistoryTable": "scripts/load_wwi_bigquery/load_unprocessed_modify_load_history.sql",
+        "loadUnprocessedModifyLoadHistoryScriptTable": "scripts/load_wwi_bigquery/load_unprocessed_modify_load_history_script.sql"
+    }, 
+    "rollBack": {
+        "rollbackDropRecordsTable": "scripts/load_wwi_bigquery/rollback_drop_records.sql",
+        "rollbackRecreateTable": "scripts/load_wwi_bigquery/rollback_recreate_table.sql",
+        "rollbackDropTable": "scripts/load_wwi_bigquery/rollback_drop_table.sql"
     },
     "tables": [
         {
@@ -54,36 +70,35 @@
             "source": {
                 "schema": "Application",
                 "table": "Cities",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_application_cities_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_application_cities_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Application_Cities",
                 "stagingTable": "Application_Cities_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_application_cities.sql",
-                "modifyTable": [
+                "createTable": "scripts/load_wwi_bigquery/create_application_cities.sql",
+                "modifyTable": 
+                [
                     {
                         "name": "Add NewColumn column",
-                        "tableUpdate": "notebooks/scripts/load_wwi_bigquery/modify_cities1.sql",
-                        "tableCreateStaging": "notebooks/scripts/load_wwi_bigquery/modify_cities_staging1.sql",
-                        "tableDataLoad": "notebooks/scripts/load_wwi_mssql/modify_cities_load1_bq.sql",
-                        "tableDataUpdate": "notebooks/scripts/load_wwi_bigquery/modify_cities_update1.sql",
-                        "tableDataTest": "notebooks/scripts/load_wwi_bigquery/tests/modify_cities_load1.sql",
-                        "tableCountDataTest": "notebooks/scripts/load_wwi_bigquery/tests/validrange_modify_record_count.sql"
+                        "tableUpdate": "scripts/load_wwi_bigquery/modify_cities1.sql",
+                        "tableCreateStaging": "scripts/load_wwi_bigquery/modify_cities_staging1.sql",
+                        "tableDataLoad": "scripts/load_wwi_mssql/modify_cities_load1_bq.sql",
+                        "tableDataUpdate": "scripts/load_wwi_bigquery/modify_cities_update1.sql",
+                        "tableDataTest": "scripts/load_wwi_bigquery/tests/modify_cities_load1.sql",
+                        "tableCountDataTest": "scripts/load_wwi_bigquery/tests/validrange_modify_record_count.sql",
+                        "tableAssertTests": []
                     }
                 ],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
-                "specificColumnTypes": [
-                    {
-                        "name": "Location",
-                        "type": "VARBINARY(MAX)",
-                        "typeCast": "CAST(? AS VARBINARY(MAX))"
-                    }
-                ],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_application_cities.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
+                "specificColumnTypes": [],
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_application_cities.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -91,30 +106,35 @@
             "source": {
                 "schema": "Application",
                 "table": "Cities_Archive",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_application_cities_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_application_cities_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Application_Cities_Archive",
                 "stagingTable": "Application_Cities_Archive_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_application_cities.sql",
-                "modifyTable": [
+                "createTable": "scripts/load_wwi_bigquery/create_application_cities.sql",
+                "modifyTable": 
+                [
                     {
                         "name": "Add NewColumn column",
-                        "tableUpdate": "notebooks/scripts/load_wwi_bigquery/modify_cities1.sql",
-                        "tableCreateStaging": "notebooks/scripts/load_wwi_bigquery/modify_cities_staging1.sql",
-                        "tableDataLoad": "notebooks/scripts/load_wwi_mssql/modify_cities_load1_bq.sql",
-                        "tableDataUpdate": "notebooks/scripts/load_wwi_bigquery/modify_cities_update1.sql",
-                        "tableDataTest": "notebooks/scripts/load_wwi_bigquery/tests/modify_cities_load1.sql",
-                        "tableCountDataTest": "notebooks/scripts/load_wwi_bigquery/tests/validrange_modify_record_count.sql"
+                        "tableUpdate": "scripts/load_wwi_bigquery/modify_cities1.sql",
+                        "tableCreateStaging": "scripts/load_wwi_bigquery/modify_cities_staging1.sql",
+                        "tableDataLoad": "scripts/load_wwi_mssql/modify_cities_load1_bq.sql",
+                        "tableDataUpdate": "scripts/load_wwi_bigquery/modify_cities_update1.sql",
+                        "tableDataTest": "scripts/load_wwi_bigquery/tests/modify_cities_load1.sql",
+                        "tableCountDataTest": "scripts/load_wwi_bigquery/tests/validrange_modify_record_count.sql",
+                        "tableAssertTests": []
                     }
                 ],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_application_cities.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_application_cities.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -122,20 +142,36 @@
             "source": {
                 "schema": "Application",
                 "table": "Countries",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_application_countries_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_application_countries_2014-01-01_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Application_Countries",
                 "stagingTable": "Application_Countries_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_application_countries.sql",
-                "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_application_countries_2014-01-01.sql",
+                "modifyTable": [
+                    {
+                        "name": "Drop LastEditedBy column",
+                        "tableUpdate": "scripts/load_wwi_bigquery/modify_countries_drop_lasteditedby.sql",
+                        "tableCreateStaging": "",
+                        "tableDataLoad": "",
+                        "tableDataUpdate": "",
+                        "tableDataTest": "",
+                        "tableCountDataTest": "",
+                        "tableAssertTests": [
+                            "scripts/load_wwi_bigquery/tests/modify_countries_assert_LastEditedBy_column_dropped.sql"
+                        ]
+                    }
+                ],
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_application_countries.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_application_countries_2014-01-01.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -143,20 +179,36 @@
             "source": {
                 "schema": "Application",
                 "table": "Countries_Archive",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_application_countries_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_application_countries_2014-01-01_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Application_Countries_Archive",
                 "stagingTable": "Application_Countries_Archive_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_application_countries.sql",
-                "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_application_countries_2014-01-01.sql",
+                "modifyTable": [
+                    {
+                        "name": "Drop LastEditedBy column",
+                        "tableUpdate": "scripts/load_wwi_bigquery/modify_countries_drop_lasteditedby.sql",
+                        "tableCreateStaging": "",
+                        "tableDataLoad": "",
+                        "tableDataUpdate": "",
+                        "tableDataTest": "",
+                        "tableCountDataTest": "",
+                        "tableAssertTests": [
+                            "scripts/load_wwi_bigquery/tests/modify_countries_assert_LastEditedBy_column_dropped.sql"
+                        ]
+                    }
+                ],
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_application_countries.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_application_countries_2014-01-01.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -164,20 +216,23 @@
             "source": {
                 "schema": "Application",
                 "table": "DeliveryMethods",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_application_deliverymethods_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_application_deliverymethods_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Application_DeliveryMethods",
                 "stagingTable": "Application_DeliveryMethods_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_application_deliverymethods.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_application_deliverymethods.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_application_deliverymethods.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_application_deliverymethods.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -185,20 +240,23 @@
             "source": {
                 "schema": "Application",
                 "table": "DeliveryMethods_Archive",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_application_deliverymethods_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_application_deliverymethods_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Application_DeliveryMethods_Archive",
                 "stagingTable": "Application_DeliveryMethods_Archive_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_application_deliverymethods.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_application_deliverymethods.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_application_deliverymethods.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_application_deliverymethods.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -206,20 +264,23 @@
             "source": {
                 "schema": "Application",
                 "table": "PaymentMethods",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_application_paymentmethods_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_application_paymentmethods_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Application_PaymentMethods",
                 "stagingTable": "Application_PaymentMethods_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_application_paymentmethods.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_application_paymentmethods.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_application_paymentmethods.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_application_paymentmethods.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -227,20 +288,23 @@
             "source": {
                 "schema": "Application",
                 "table": "PaymentMethods_Archive",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_application_paymentmethods_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_application_paymentmethods_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Application_PaymentMethods_Archive",
                 "stagingTable": "Application_PaymentMethods_Archive_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_application_paymentmethods.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_application_paymentmethods.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_application_paymentmethods.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_application_paymentmethods.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -248,20 +312,23 @@
             "source": {
                 "schema": "Application",
                 "table": "People",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_application_people_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_application_people_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Application_People",
                 "stagingTable": "Application_People_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_application_people.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_application_people.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_application_people.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_application_people.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -269,20 +336,23 @@
             "source": {
                 "schema": "Application",
                 "table": "People_Archive",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_application_people_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_application_people_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Application_People_Archive",
                 "stagingTable": "Application_People_Archive_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_application_people.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_application_people.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_application_people.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_application_people.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -290,20 +360,23 @@
             "source": {
                 "schema": "Application",
                 "table": "StateProvinces",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_application_stateprovinces_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_application_stateprovinces_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Application_StateProvinces",
                 "stagingTable": "Application_StateProvinces_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_application_stateprovinces.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_application_stateprovinces.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_application_stateprovinces.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_application_stateprovinces.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -311,20 +384,23 @@
             "source": {
                 "schema": "Application",
                 "table": "StateProvinces_Archive",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_application_stateprovinces_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_application_stateprovinces_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Application_StateProvinces_Archive",
                 "stagingTable": "Application_StateProvinces_Archive_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_application_stateprovinces.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_application_stateprovinces.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_application_stateprovinces.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_application_stateprovinces.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -332,20 +408,23 @@
             "source": {
                 "schema": "Application",
                 "table": "TransactionTypes",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_application_transactiontypes_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_application_transactiontypes_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Application_TransactionTypes",
                 "stagingTable": "Application_TransactionTypes_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_application_transactiontypes.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_application_transactiontypes.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_application_transactiontypes.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_application_transactiontypes.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -353,20 +432,23 @@
             "source": {
                 "schema": "Application",
                 "table": "TransactionTypes_Archive",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_application_transactiontypes_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_application_transactiontypes_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Application_TransactionTypes_Archive",
                 "stagingTable": "Application_TransactionTypes_Archive_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_application_transactiontypes.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_application_transactiontypes.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_application_transactiontypes.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_application_transactiontypes.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -374,20 +456,23 @@
             "source": {
                 "schema": "Purchasing",
                 "table": "PurchaseOrderLines",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_purchasing_purchaseorderlines_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_purchasing_purchaseorderlines_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Purchasing_PurchaseOrderLines",
                 "stagingTable": "Purchasing_PurchaseOrderLines_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_purchasing_purchaseorderlines.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_purchasing_purchaseorderlines.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_purchasing_purchaseorderlines.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_purchasing_purchaseorderlines.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -395,20 +480,23 @@
             "source": {
                 "schema": "Purchasing",
                 "table": "PurchaseOrders",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_purchasing_purchaseorders_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_purchasing_purchaseorders_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Purchasing_PurchaseOrders",
                 "stagingTable": "Purchasing_PurchaseOrders_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_purchasing_purchaseorders.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_purchasing_purchaseorders.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_purchasing_purchaseorders.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_purchasing_purchaseorders.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -416,20 +504,23 @@
             "source": {
                 "schema": "Purchasing",
                 "table": "SupplierCategories",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_purchasing_suppliercategories_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_purchasing_suppliercategories_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Purchasing_SupplierCategories",
                 "stagingTable": "Purchasing_SupplierCategories_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_purchasing_suppliercategories.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_purchasing_suppliercategories.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_purchasing_suppliercategories.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_purchasing_suppliercategories.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -437,20 +528,23 @@
             "source": {
                 "schema": "Purchasing",
                 "table": "SupplierCategories_Archive",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_purchasing_suppliercategories_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_purchasing_suppliercategories_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Purchasing_SupplierCategories_Archive",
                 "stagingTable": "Purchasing_SupplierCategories_Archive_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_purchasing_suppliercategories.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_purchasing_suppliercategories.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_purchasing_suppliercategories.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_purchasing_suppliercategories.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -458,20 +552,23 @@
             "source": {
                 "schema": "Purchasing",
                 "table": "Suppliers",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_purchasing_suppliers_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_purchasing_suppliers_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Purchasing_Suppliers",
                 "stagingTable": "Purchasing_Suppliers_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_purchasing_suppliers.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_purchasing_suppliers.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_purchasing_suppliers.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_purchasing_suppliers.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -479,20 +576,23 @@
             "source": {
                 "schema": "Purchasing",
                 "table": "Suppliers_Archive",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_purchasing_suppliers_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_purchasing_suppliers_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Purchasing_Suppliers_Archive",
                 "stagingTable": "Purchasing_Suppliers_Archive_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_purchasing_suppliers.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_purchasing_suppliers.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_purchasing_suppliers.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_purchasing_suppliers.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -500,20 +600,23 @@
             "source": {
                 "schema": "Purchasing",
                 "table": "SupplierTransactions",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_purchasing_suppliertransactions_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_purchasing_suppliertransactions_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Purchasing_SupplierTransactions",
                 "stagingTable": "Purchasing_SupplierTransactions_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_purchasing_suppliertransactions.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_purchasing_suppliertransactions.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_purchasing_suppliertransactions.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_purchasing_suppliertransactions.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -521,20 +624,23 @@
             "source": {
                 "schema": "Sales",
                 "table": "BuyingGroups",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_sales_buyinggroups_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_sales_buyinggroups_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Sales_BuyingGroups",
                 "stagingTable": "Sales_BuyingGroups_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_sales_buyinggroups.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_sales_buyinggroups.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_sales_buyinggroups.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_sales_buyinggroups.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -542,20 +648,23 @@
             "source": {
                 "schema": "Sales",
                 "table": "BuyingGroups_Archive",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_sales_buyinggroups_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_sales_buyinggroups_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Sales_BuyingGroups_Archive",
                 "stagingTable": "Sales_BuyingGroups_Archive_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_sales_buyinggroups.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_sales_buyinggroups.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_sales_buyinggroups.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_sales_buyinggroups.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -563,20 +672,23 @@
             "source": {
                 "schema": "Sales",
                 "table": "CustomerCategories",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_sales_customercategories_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_sales_customercategories_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Sales_CustomerCategories",
                 "stagingTable": "Sales_CustomerCategories_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_sales_customercategories.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_sales_customercategories.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_sales_customercategories.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_sales_customercategories.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -584,20 +696,23 @@
             "source": {
                 "schema": "Sales",
                 "table": "CustomerCategories_Archive",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_sales_customercategories_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_sales_customercategories_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Sales_CustomerCategories_Archive",
                 "stagingTable": "Sales_CustomerCategories_Archive_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_sales_customercategories.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_sales_customercategories.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_sales_customercategories.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_sales_customercategories.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -605,20 +720,23 @@
             "source": {
                 "schema": "Sales",
                 "table": "Customers",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_sales_customers_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_sales_customers_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Sales_Customers",
                 "stagingTable": "Sales_Customers_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_sales_customers.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_sales_customers.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_sales_customers.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_sales_customers.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -626,20 +744,23 @@
             "source": {
                 "schema": "Sales",
                 "table": "Customers_Archive",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_sales_customers_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_sales_customers_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Sales_Customers_Archive",
                 "stagingTable": "Sales_Customers_Archive_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_sales_customers.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_sales_customers.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_sales_customers.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_sales_customers.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -647,20 +768,23 @@
             "source": {
                 "schema": "Sales",
                 "table": "CustomerTransactions",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_sales_customertransactions_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_sales_customertransactions_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Sales_CustomerTransctions",
                 "stagingTable": "Sales_CustomerTransctions_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_sales_customertransactions.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_sales_customertransactions.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_sales_customertransactions.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_sales_customertransactions.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -668,20 +792,23 @@
             "source": {
                 "schema": "Sales",
                 "table": "InvoiceLines",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_sales_invoicelines_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_sales_invoicelines_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Sales_InvoiceLines",
                 "stagingTable": "Sales_InvoiceLines_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_sales_invoicelines.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_sales_invoicelines.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_sales_invoicelines.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_sales_invoicelines.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -689,20 +816,23 @@
             "source": {
                 "schema": "Sales",
                 "table": "Invoices",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_sales_invoices_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_sales_invoices_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Sales_Invoices",
                 "stagingTable": "Sales_Invoices_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_sales_invoices.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_sales_invoices.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_sales_invoices.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_sales_invoices.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -710,20 +840,23 @@
             "source": {
                 "schema": "Sales",
                 "table": "OrderLines",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_sales_orderlines_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_sales_orderlines_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Sales_OrderLines",
                 "stagingTable": "Sales_OrderLines_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_sales_orderlines.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_sales_orderlines.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_sales_orderlines.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_sales_orderlines.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -731,20 +864,47 @@
             "source": {
                 "schema": "Sales",
                 "table": "Orders",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_sales_orders_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_sales_orders_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Sales_Orders",
                 "stagingTable": "Sales_Orders_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_sales_orders.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_sales_orders.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_sales_orders.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_sales_orders.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
+            }
+        },
+        {
+            "name": "SalesSpecialDeals",
+            "source": {
+                "schema": "Sales",
+                "table": "SpecialDeals",
+                "loadTable": "scripts/load_wwi_mssql/load_sales_specialdeals_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
+            },
+            "destination": {
+                "schema": "WideWorldImporters2",
+                "table": "Sales_SpecialDeals",
+                "stagingTable": "Sales_SpecialDeals_Staging",
+                "createTable": "scripts/load_wwi_bigquery/create_sales_specialdeals.sql",
+                "modifyTable": [],
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
+                "specificColumnTypes": [],
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_sales_specialdeals.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -752,20 +912,23 @@
             "source": {
                 "schema": "Warehouse",
                 "table": "Colors",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_warehouse_colors_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_warehouse_colors_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Warehouse_Colors",
                 "stagingTable": "Warehouse_Colors_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_warehouse_colors.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_warehouse_colors.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_warehouse_colors.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_warehouse_colors.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -773,20 +936,23 @@
             "source": {
                 "schema": "Warehouse",
                 "table": "Colors_Archive",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_warehouse_colors_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_warehouse_colors_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Warehouse_Colors_Archive",
                 "stagingTable": "Warehouse_Colors_Archive_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_warehouse_colors.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_warehouse_colors.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_warehouse_colors.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_warehouse_colors.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -794,20 +960,23 @@
             "source": {
                 "schema": "Warehouse",
                 "table": "PackageTypes",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_warehouse_packagetypes_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_warehouse_packagetypes_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Warehouse_PackageTypes",
                 "stagingTable": "Warehouse_PackageTypes_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_warehouse_packagetypes.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_warehouse_packagetypes.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_warehouse_packagetypes.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_warehouse_packagetypes.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -815,20 +984,23 @@
             "source": {
                 "schema": "Warehouse",
                 "table": "PackageTypes_Archive",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_warehouse_packagetypes_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_warehouse_packagetypes_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Warehouse_PackageTypes_Archive",
                 "stagingTable": "Warehouse_PackageTypes_Archive_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_warehouse_packagetypes.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_warehouse_packagetypes.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_warehouse_packagetypes.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_warehouse_packagetypes.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -836,20 +1008,23 @@
             "source": {
                 "schema": "Warehouse",
                 "table": "StockGroups",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_warehouse_stockgroups_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_warehouse_stockgroups_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Warehouse_StockGroups",
                 "stagingTable": "Warehouse_StockGroups_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_warehouse_stockgroups.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_warehouse_stockgroups.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_warehouse_stockgroups.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_warehouse_stockgroups.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -857,20 +1032,23 @@
             "source": {
                 "schema": "Warehouse",
                 "table": "StockGroups_Archive",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_warehouse_stockgroups_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_warehouse_stockgroups_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Warehouse_StockGroups_Archive",
                 "stagingTable": "Warehouse_StockGroups_Archive_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_warehouse_stockgroups.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_warehouse_stockgroups.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_warehouse_stockgroups.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_warehouse_stockgroups.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -878,20 +1056,23 @@
             "source": {
                 "schema": "Warehouse",
                 "table": "StockItemHoldings",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_warehouse_stockitemholdings_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_warehouse_stockitemholdings_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Warehouse_StockItemHoldings",
                 "stagingTable": "Warehouse_StockItemHoldings_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_warehouse_stockitemholdings.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_warehouse_stockitemholdings.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_warehouse_stockitemholdings.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_warehouse_stockitemholdings.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -899,20 +1080,23 @@
             "source": {
                 "schema": "Warehouse",
                 "table": "StockItems",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_warehouse_stockitems_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_warehouse_stockitems_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Warehouse_StockItems",
                 "stagingTable": "Warehouse_StockItems_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_warehouse_stockitems.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_warehouse_stockitems.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_warehouse_stockitems.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_warehouse_stockitems.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -920,20 +1104,23 @@
             "source": {
                 "schema": "Warehouse",
                 "table": "StockItems_Archive",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_warehouse_stockitems_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_warehouse_stockitems_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Warehouse_StockItems_Archive",
                 "stagingTable": "Warehouse_StockItems_Archive_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_warehouse_stockitems.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_warehouse_stockitems.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_warehouse_stockitems.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_warehouse_stockitems.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/validrange_record_count.sql"
             }
         },
         {
@@ -941,20 +1128,23 @@
             "source": {
                 "schema": "Warehouse",
                 "table": "StockItemStockGroups",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_warehouse_stockitemstockgroups_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_warehouse_stockitemstockgroups_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Warehouse_StockItemStockGroups",
                 "stagingTable": "Warehouse_StockItemStockGroups_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_warehouse_stockitemstockgroups.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_warehouse_stockitemstockgroups.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_warehouse_stockitemstockgroups.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_warehouse_stockitemstockgroups.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
             }
         },
         {
@@ -962,23 +1152,31 @@
             "source": {
                 "schema": "Warehouse",
                 "table": "StockItemTransactions",
-                "loadTable": "notebooks/scripts/load_wwi_mssql/load_warehouse_stockitemtransactions_bq.sql"
+                "loadTable": "scripts/load_wwi_mssql/load_warehouse_stockitemtransactions_bq.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "WideWorldImporters2",
                 "table": "Warehouse_StockItemTransactions",
                 "stagingTable": "Warehouse_StockItemTransactions_Staging",
-                "createTable": "notebooks/scripts/load_wwi_bigquery/create_warehouse_stockitemtransactions.sql",
+                "createTable": "scripts/load_wwi_bigquery/create_warehouse_stockitemtransactions.sql",
                 "modifyTable": [],
-                "insertTable": "notebooks/scripts/load_wwi_bigquery/insert_record.sql",
-                "dropTable": "notebooks/scripts/load_wwi_bigquery/drop_table.sql",
-                "deleteByLoadDateTable": "notebooks/scripts/load_wwi_bigquery/delete_record_by_load_date.sql",
+                "insertTable": "scripts/load_wwi_bigquery/insert_record.sql",
+                "dropTable": "scripts/load_wwi_bigquery/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_bigquery/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_bigquery/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
-                "testLoadTable": "notebooks/scripts/load_wwi_bigquery/tests/load_warehouse_stockitemtransactions.sql",
-                "testCountTable": "notebooks/scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
+                "testLoadTable": "scripts/load_wwi_bigquery/tests/load_warehouse_stockitemtransactions.sql",
+                "testCountTable": "scripts/load_wwi_bigquery/tests/lasteditedwhen_record_count.sql"
             }
         }
     ],
     "test": true,
-    "testRecordCount": 10
+    "testRecordCount": 10,
+    "loadTableExists": "scripts/load_wwi_mssql/load_table_exists.sql", 
+    "loadArchiveConfig": {
+        "sourcePath": "scripts/load/",
+        "destinationPath": "load_wwi_archive/"
+    }
 }

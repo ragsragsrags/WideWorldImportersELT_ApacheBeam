@@ -1,0 +1,27 @@
+SELECT
+    [CountryID],
+    [CountryName],
+    [FormalName],
+    [IsoAlpha3Code],
+    [IsoNumericCode],
+    [CountryType],
+    [LatestRecordedPopulation],
+    [Continent],
+    [Region],
+    [Subregion],
+    [Border] = CAST([Border] AS VARBINARY(MAX)),
+    [ValidFrom],
+    [ValidTo],
+    LoadDate
+FROM
+    [<< Schema >>].[<< Table >>]
+WHERE
+    ValidFrom > '<< LastCutoffDate >>'  AND	
+    ValidFrom <= '<< NewCutoffDate >>'
+ORDER BY
+    CountryID,
+    ValidFrom,
+    ValidTo
+
+OFFSET 0 ROWS
+FETCH NEXT << NumberOfRows >> ROWS ONLY

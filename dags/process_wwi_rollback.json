@@ -1,0 +1,34 @@
+{
+    "cutoffDate": "2013-01-01 00:00:00",
+    "gcpCredential": "/opt/airflow/resources/credentials/bigquery_token.json",
+    "sparkMaster": "local[*]",
+    "sparkJars": "../resources/jars/mssql-jdbc-13.2.0.jre11.jar",
+    "sparkExecutorMemory": "3g",
+    "sparkDriverMemory": "3g",
+    "sparkExecutorCores": "2",
+    "sparkCoresMax": "2",
+    "sparkNetworkTimeout": "600s",
+    "sparkExecutorHeartBeatInterval": "599s",
+    "destination": {
+        "databaseType": "mssql",
+        "database": "WideWorldImportersDW",
+        "conn_spark": "jdbc:sqlserver://host.docker.internal;database=WideWorldImportersDW;user=sa;password=PP@$$w0rd;encrypt=false",
+        "conn": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDW;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
+    },
+    "loadHistoryDate": {
+        "schema": "dbo",
+        "table": "LoadHistoryDate",
+        "loadLoadHistoryDateTable": "load/scripts/load_wwi_mssql/load_load_history_date_by_loaddate.sql"
+    },
+    "warehouseHistoryDate": {
+        "schema": "dbo",
+        "table": "WarehouseHistoryDate",
+        "loadWarehouseHistoryDateTable": "warehouse/scripts/warehouse_wwi_mssql/load_warehouse_history_date_by_loaddate.sql"
+    },
+    "processDirectory": "/notebooks",
+    "sqlUtilitiesPath": "/notebooks/modules/sql_utilities.py",
+    "kernelName": "python3",
+    "noOfLoadTablesPerProcess": 24,
+    "noOfWarehouseDimensionTablesPerProcess": 5,
+    "noOfWarehouseFactTablesPerProcess": 3
+}

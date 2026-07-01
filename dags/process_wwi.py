@@ -1,5 +1,6 @@
 import os
 import json
+import shutil
 
 from airflow.sdk import task
 from datetime import timedelta, datetime
@@ -20,12 +21,22 @@ no_of_load_tables_per_process = config["noOfLoadTablesPerProcess"]
 no_of_warehouse_dimension_tables_per_process = config["noOfWarehouseDimensionTablesPerProcess"]
 no_of_warehouse_fact_tables_per_process = config["noOfWarehouseFactTablesPerProcess"]
 current_date = datetime.strptime(datetime.now().strftime("%Y-%m-%d 00:00:00"), "%Y-%m-%d %H:%M:%S")
+load_directory = f"{path}{config["loadDirectory"]}"
+load_process_directory = f"{path}{config["loadProcessDirectory"]}/{config["newCutoffDate"].replace(":", "")}"
+warehouse_directory = f"{path}{config["warehouseDirectory"]}"
+warehouse_process_directory = f"{path}{config["warehouseProcessDirectory"]}/{config["newCutoffDate"].replace(":", "")}"
+sql_utilities_file = f"{path}{config["sqlUtilitiesPath"]}"
 
 print(f"cutoff_date: {cutoff_date}")
 print(f"load_config_file: {load_config_file}")
 print(f"warehouse_config_file: {warehouse_config_file}")
 print(f"no_of_load_tables_per_process: {no_of_load_tables_per_process}")
 print(f"current_date: {current_date}")
+print(f"load_directory: {load_directory}")
+print(f"load_process_directory: {load_process_directory}")
+print(f"warehouse_directory: {warehouse_directory}")
+print(f"warehouse_process_directory: {warehouse_process_directory}")
+print(f"sql_utilities_file: {sql_utilities_file}")
 
 f = open(load_config_file,)
 load_config = json.load(f)
@@ -69,13 +80,34 @@ def single_task():
 def get_load_wwi(idx_process, tables):
     return PapermillOperator(
         task_id=f"load_wwi{idx_process}",
-        input_nb=f"{path}/notebooks/load_wwi.ipynb",
-        output_nb=f"{path}/notebooks/outputs/load_wwi{idx_process}_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
+        input_nb=f"{load_process_directory}/load_wwi.ipynb",
+        output_nb=f"{load_process_directory}/outputs/load_wwi{idx_process}_{config["newCutoffDate"]}_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
         parameters={
             "fromNotebook": False,
             "configFile": load_config_file,
             "newCutoffDate": config["newCutoffDate"],
-            "tables": tables
+            "tables": tables,
+            "sqlUtilFilePath": f"{load_process_directory}/modules/sql_utilities.py",
+            "script_directory": f"{load_process_directory}/",
+            "archivePath": load_process_directory,
+            "isInsertLoadHistoryDate": False
+        }
+    )
+
+def get_load_wwi_insert_load_history_date():
+    return PapermillOperator(
+        task_id=f"load_wwi_insert_load_history_date",
+        input_nb=f"{load_process_directory}/load_wwi.ipynb",
+        output_nb=f"{load_process_directory}/outputs/load_wwi_insert_load_history_date_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
+        parameters={
+            "fromNotebook": False,
+            "configFile": load_config_file,
+            "newCutoffDate": config["newCutoffDate"],
+            "tables": [],
+            "sqlUtilFilePath": f"{load_process_directory}/modules/sql_utilities.py",
+            "script_directory": f"{load_process_directory}/",
+            "archivePath": load_process_directory,
+            "isInsertLoadHistoryDate": True
         }
     )
 
@@ -115,15 +147,38 @@ def get_warehouse_wwi(idx_process, tables_name, tables):
 
     return PapermillOperator(
         task_id=f"warehouse_wwi_{tables_name}{idx_process}",
-        input_nb=f"{path}/notebooks/warehouse_wwi.ipynb",
-        output_nb=f"{path}/notebooks/outputs/warehouse_wwi{idx_process}_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
+        input_nb=f"{warehouse_process_directory}/warehouse_wwi.ipynb",
+        output_nb=f"{warehouse_process_directory}/outputs/warehouse_wwi{idx_process}_{config["newCutoffDate"]}_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
         parameters={
             "fromNotebook": False,
             "loadConfigFile": load_config_file,
             "configFile": warehouse_config_file,
             "newCutoffDate": config["newCutoffDate"],
             "dimension_tables": dimension_tables,
-            "fact_tables": fact_tables
+            "fact_tables": fact_tables,
+            "sqlUtilFilePath": f"{warehouse_process_directory}/modules/sql_utilities.py",
+            "archivePath": warehouse_process_directory,
+            "script_directory": ""f"{warehouse_process_directory}/",
+            "isInsertWarehouseHistoryDate": False
+        }
+    )
+
+def get_warehouse_wwi_insert_warehouse_history_date():
+    return PapermillOperator(
+        task_id=f"warehouse_wwi_insert_warehouse_history_date",
+        input_nb=f"{warehouse_process_directory}/warehouse_wwi.ipynb",
+        output_nb=f"{warehouse_process_directory}/outputs/warehouse_wwi_insert_warehouse_history_date_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
+        parameters={
+            "fromNotebook": False,
+            "loadConfigFile": load_config_file,
+            "configFile": warehouse_config_file,
+            "newCutoffDate": config["newCutoffDate"],
+            "dimension_tables": [],
+            "fact_tables": [],
+            "sqlUtilFilePath": f"{warehouse_process_directory}/modules/sql_utilities.py",
+            "archivePath": warehouse_process_directory,
+            "script_directory": ""f"{warehouse_process_directory}/",
+            "isInsertWarehouseHistoryDate": True
         }
     )
 
@@ -152,28 +207,51 @@ def get_warehouse_wwi_processes(tables_name, no_tables_per_process):
 
     return warehouse_wwi
 
+@task
+def get_load_wwi_copy_files():
+    if not os.path.isdir(load_directory):
+        raise NotADirectoryError(f"Source directory '{load_directory}' does not exist or is not a directory.")
+    shutil.copytree(load_directory, load_process_directory, dirs_exist_ok=True)
+    shutil.copy2(load_config_file, f"{load_process_directory}/load_wwi.json")
+    os.makedirs(f"{load_process_directory}/modules", exist_ok=True)
+    os.makedirs(f"{load_process_directory}/outputs", exist_ok=True)
+    shutil.copy2(sql_utilities_file, f"{load_process_directory}/modules/sql_utilities.py")
+
+@task
+def get_warehouse_wwi_copy_files():
+    if not os.path.isdir(warehouse_directory):
+        raise NotADirectoryError(f"Source directory '{warehouse_directory}' does not exist or is not a directory.")
+    shutil.copytree(warehouse_directory, warehouse_process_directory, dirs_exist_ok=True)
+    shutil.copy2(warehouse_config_file, f"{warehouse_process_directory}/warehouse_wwi.json")
+    os.makedirs(f"{warehouse_process_directory}/modules", exist_ok=True)
+    os.makedirs(f"{warehouse_process_directory}/outputs", exist_ok=True)
+    shutil.copy2(sql_utilities_file, f"{warehouse_process_directory}/modules/sql_utilities.py")
+
 with DAG(
     dag_id="process_wwi",
     default_args=default_args,
     dagrun_timeout=timedelta(minutes=60)
 ) as dag:
     new_cutoff_date = set_cutoff_date("set_cutoff_date", cutoff_date, config_file)
+    copy_load_files = get_load_wwi_copy_files()
     single_task_placeholder = single_task() 
-    single_task_placeholder2 = single_task() 
     load_wwi = get_load_wwi_processes()
+    copy_warehouse_files = get_warehouse_wwi_copy_files()
     warehouse_wwi_dimension = get_warehouse_wwi_processes("dimensionTables", no_of_warehouse_dimension_tables_per_process)
     warehouse_wwi_fact = get_warehouse_wwi_processes("factTables", no_of_warehouse_fact_tables_per_process)
-
+    
     (
         new_cutoff_date 
+        >>
+        copy_load_files
         >> 
         load_wwi 
-        >> 
-        single_task_placeholder 
-        >> 
+        >>
+        copy_warehouse_files
+        >>  
         warehouse_wwi_dimension 
         >> 
-        single_task_placeholder2 
+        single_task_placeholder  
         >> 
         warehouse_wwi_fact
     )

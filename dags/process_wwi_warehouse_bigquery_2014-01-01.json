@@ -23,6 +23,7 @@
             "--environment_config=beam-python-workers:50000"
         ]
     },
+    "isRollback": false,
     "source": {
         "databaseType": "spark-bigquery",
         "database": "dbt-tutorial-462014",
@@ -36,43 +37,61 @@
     "warehouseHistory": {
         "schema": "WideWorldImportersDW2",
         "table": "WarehouseHistory",
-        "createWarehouseHistoryTable": "notebooks/scripts/warehouse_wwi_bigquery/create_warehouse_history.sql",
-        "insertWarehouseHistoryTable": "notebooks/scripts/warehouse_wwi_bigquery/insert_warehouse_history.sql",
-        "loadLastCutoffDateWarehouseHistoryTable": "notebooks/scripts/warehouse_wwi_bigquery/load_last_cutoff_date_warehouse_history.sql",
-        "loadLastCutoffDatesTable": "notebooks/scripts/warehouse_wwi_bigquery/load_last_cutoff_dates.sql"
+        "createWarehouseHistoryTable": "scripts/warehouse_wwi_bigquery/create_warehouse_history.sql",
+        "insertWarehouseHistoryTable": "scripts/warehouse_wwi_bigquery/insert_warehouse_history.sql",
+        "loadLastCutoffDateWarehouseHistoryTable": "scripts/warehouse_wwi_bigquery/load_last_cutoff_date_warehouse_history.sql",
+        "loadLastCutoffDatesTable": "scripts/warehouse_wwi_bigquery/load_last_cutoff_dates.sql",
+        "loadWarehouseHistoriesForRollback": "scripts/warehouse_wwi_bigquery/load_warehouse_histories_for_rollback.sql",
+        "loadWarehouseHistoriesForRollbackDropRecords": "scripts/warehouse_wwi_bigquery/load_warehouse_histories_for_rollback_droprecords.sql"
+    },
+    "warehouseHistoryDate": {
+        "schema": "WideWorldImportersDW2",
+        "table": "WarehouseHistoryDate",
+        "createWarehouseHistoryDateTable": "scripts/warehouse_wwi_bigquery/create_warehouse_history_date.sql",
+        "insertWarehouseHistoryDateTable": "scripts/warehouse_wwi_bigquery/insert_warehouse_history_date.sql",
+        "loadWarehouseHistoryDateTable": "scripts/warehouse_wwi_bigquery/load_warehouse_history_date_by_loaddate.sql",
+        "deleteWarehouseHistoryDatesForRollback": "scripts/warehouse_wwi_bigquery/delete_warehouse_history_dates_for_rollback.sql"
     },
     "modifyWarehouseHistory": {
         "schema": "WideWorldImportersDW2",
         "table": "ModifyWarehouseHistory",
-        "createModifyWarehouseHistoryTable": "notebooks/scripts/warehouse_wwi_bigquery/create_modify_warehouse_history.sql",
-        "insertModifyWarehouseHistoryTable": "notebooks/scripts/warehouse_wwi_bigquery/insert_modify_warehouse_history.sql",
-        "loadUnprocessedModifyWarehouseHistoryTable": "notebooks/scripts/warehouse_wwi_bigquery/load_unprocessed_modify_warehouse_history.sql",
-        "loadUnprocessedModifyWarehouseHistoryScriptTable": "notebooks/scripts/warehouse_wwi_bigquery/load_unprocessed_modify_warehouse_history_script.sql"
+        "createModifyWarehouseHistoryTable": "scripts/warehouse_wwi_bigquery/create_modify_warehouse_history.sql",
+        "insertModifyWarehouseHistoryTable": "scripts/warehouse_wwi_bigquery/insert_modify_warehouse_history.sql",
+        "loadUnprocessedModifyWarehouseHistoryTable": "scripts/warehouse_wwi_bigquery/load_unprocessed_modify_warehouse_history.sql",
+        "loadUnprocessedModifyWarehouseHistoryScriptTable": "scripts/warehouse_wwi_bigquery/load_unprocessed_modify_warehouse_history_script.sql"
     },
     "testConfig": {
-        "selectCounts": "notebooks/scripts/warehouse_wwi_bigquery/tests/select_counts.sql",
-        "unique": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_unique.sql",
-        "uniqueModify": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_unique_modify.sql",
-        "notNull": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_not_null.sql",
-        "notNullModify": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_not_null_modify.sql",
-        "relationship": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_relationship.sql",
-        "expressionTrue": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_expression_true.sql"
+        "selectCounts": "scripts/warehouse_wwi_bigquery/tests/select_counts.sql",
+        "unique": "scripts/warehouse_wwi_bigquery/tests/test_unique.sql",
+        "uniqueModify": "scripts/warehouse_wwi_bigquery/tests/test_unique_modify.sql",
+        "notNull": "scripts/warehouse_wwi_bigquery/tests/test_not_null.sql",
+        "notNullModify": "scripts/warehouse_wwi_bigquery/tests/test_not_null_modify.sql",
+        "relationship": "scripts/warehouse_wwi_bigquery/tests/test_relationship.sql",
+        "expressionTrue": "scripts/warehouse_wwi_bigquery/tests/test_expression_true.sql"
+    },
+    "rollBack": {
+        "rollbackDropRecordsTable": "scripts/warehouse_wwi_bigquery/rollback_drop_records.sql",
+        "rollbackRecreateTable": "scripts/warehouse_wwi_bigquery/rollback_recreate_table.sql",
+        "rollbackDropTable": "scripts/warehouse_wwi_bigquery/rollback_drop_table.sql"
     },
     "dimensionTables": [
         {
+            "rollbackVersion": 1,
             "name": "DimCities",
             "schema": "WideWorldImportersDW2",
             "table": "DimCities",
-            "createTable": "notebooks/scripts/warehouse_wwi_bigquery/create_dimension_cities.sql",
-            "upsertTable": "notebooks/scripts/warehouse_wwi_bigquery/upsert_dimension_cities_2013-01-01.sql",
+            "createTable": "scripts/warehouse_wwi_bigquery/create_dimension_cities.sql",
+            "upsertTable": "scripts/warehouse_wwi_bigquery/upsert_dimension_cities.sql",
             "specificColumnTypes": [],
+            "dropColumn": "scripts/warehouse_wwi_bigquery/drop_column.sql",
+            "dropTable": "scripts/warehouse_wwi_bigquery/drop_table.sql",
             "primaryKey": "CityKey",
             "modifyTable": [
                 {
                     "name": "Add StateProvinceCode column",
-                    "tableUpdate": "notebooks/scripts/warehouse_wwi_bigquery/modify_dimcities1.sql",
-                    "tableDataLoad": "notebooks/scripts/warehouse_wwi_bigquery/modify_dimcities_load1.sql",
-                    "tableDataUpdate": "notebooks/scripts/warehouse_wwi_bigquery/modify_dimcities_update1.sql",
+                    "tableUpdate": "scripts/warehouse_wwi_bigquery/modify_dimcities1.sql",
+                    "tableDataLoad": "scripts/warehouse_wwi_bigquery/modify_dimcities_load1.sql",
+                    "tableDataUpdate": "scripts/warehouse_wwi_bigquery/modify_dimcities_update1.sql",
                     "unitTests": [
                         {
                             "name": "Test StateProvinceCode Not Null",
@@ -85,7 +104,7 @@
                             "type": "table",
                             "column": "",
                             "subType": "",
-                            "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_dimension_cities_add_stateprovincecode_data.sql"
+                            "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_cities_add_stateprovincecode_data.sql"
                         }
                     ]
                 }
@@ -128,6 +147,12 @@
                     "subType": "notNull"
                 },
                 {
+                    "name": "Test StateProvinceCode Not Null",
+                    "type": "column",
+                    "column": "StateProvinceCode",
+                    "subType": "notNull"
+                },
+                {
                     "name": "Test Country Not Null",
                     "type": "column",
                     "column": "Country",
@@ -162,26 +187,45 @@
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_dimension_cities_data_2013-01-01.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_cities_data.sql"
                 },
                 {
                     "name": "Test DimCities Unknown Record Exists",
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_dimension_cities_unknown_record_exists.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_cities_unknown_record_exists.sql"
                 }
             ]
         },
         {
+            "rollbackVersion": 1,
             "name": "DimCustomers",
             "schema": "WideWorldImportersDW2",
             "table": "DimCustomers",
-            "createTable": "notebooks/scripts/warehouse_wwi_bigquery/create_dimension_customers.sql",
-            "upsertTable": "notebooks/scripts/warehouse_wwi_bigquery/upsert_dimension_customers.sql",
+            "createTable": "scripts/warehouse_wwi_bigquery/create_dimension_customers.sql",
+            "upsertTable": "scripts/warehouse_wwi_bigquery/upsert_dimension_customers.sql",
             "specificColumnTypes": [],
+            "dropColumn": "scripts/warehouse_wwi_bigquery/drop_column.sql",
+            "dropTable": "scripts/warehouse_wwi_bigquery/drop_table.sql",
             "primaryKey": "CustomerKey",
-            "modifyTable": [],
+            "modifyTable": [
+                {
+                    "name": "Drop IsOnCreditHold column",
+                    "tableUpdate": "scripts/warehouse_wwi_bigquery/modify_dimcustomers_drop_isoncredithold.sql",
+                    "tableDataLoad": "",
+                    "tableDataUpdate": "",
+                    "unitTests": [
+                        {
+                            "name": "Test IsOnCreditHold column dropped",
+                            "type": "table",
+                            "column": "",
+                            "subType": "",
+                            "testScript": "scripts/warehouse_wwi_bigquery/tests/test_modify_dimension_customers_drop_isoncredithold.sql"
+                        }
+                    ]
+                }
+            ],
             "unitTests": [
                 {
                     "name": "Test CustomerKey Not Null",
@@ -236,24 +280,86 @@
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_dimension_customers_data.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_customers_data.sql"
                 },
                 {
                     "name": "Test DimCustomers Unknown Record Exists",
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_dimension_customers_unknown_record_exists.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_customers_unknown_record_exists.sql"
                 }
             ]
         },
         {
+            "rollbackVersion": 1,
+            "name": "DimCountries",
+            "schema": "WideWorldImportersDW2",
+            "table": "DimCountries",
+            "createTable": "scripts/warehouse_wwi_bigquery/create_dimension_countries.sql",
+            "upsertTable": "scripts/warehouse_wwi_bigquery/upsert_dimension_countries.sql",
+            "specificColumnTypes": [],
+            "dropColumn": "scripts/warehouse_wwi_bigquery/drop_column.sql",
+            "dropTable": "scripts/warehouse_wwi_bigquery/drop_table.sql",
+            "primaryKey": "CountryKey",
+            "modifyTable": [],
+            "unitTests": [
+                {
+                    "name": "Test CountryKey Not Null",
+                    "type": "column",
+                    "column": "CountryKey",
+                    "subType": "notNull"
+                },
+                {
+                    "name": "Test CountryKey Unique",
+                    "type": "column",
+                    "column": "CountryKey",
+                    "subType": "unique"
+                },
+                {
+                    "name": "Test WWICountryID Not Null",
+                    "type": "column",
+                    "column": "WWICountryID",
+                    "subType": "notNull"
+                },
+                {
+                    "name": "Test WWICountryID Unique",
+                    "type": "column",
+                    "column": "WWICountryID",
+                    "subType": "unique"
+                },
+                {
+                    "name": "Test Country Not Null",
+                    "type": "column",
+                    "column": "Country",
+                    "subType": "notNull"
+                },
+                {
+                    "name": "Test DimCountries Data",
+                    "type": "table",
+                    "column": "",
+                    "subType": "",
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_countries_data.sql"
+                },
+                {
+                    "name": "Test DimCountries Unknown Record Exists",
+                    "type": "table",
+                    "column": "",
+                    "subType": "",
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_countries_unknown_record_exists.sql"
+                }
+            ]
+        },
+        {
+            "rollbackVersion": 1,
             "name": "DimEmployees",
             "schema": "WideWorldImportersDW2",
             "table": "DimEmployees",
-            "createTable": "notebooks/scripts/warehouse_wwi_bigquery/create_dimension_employees.sql",
-            "upsertTable": "notebooks/scripts/warehouse_wwi_bigquery/upsert_dimension_employees.sql",
+            "createTable": "scripts/warehouse_wwi_bigquery/create_dimension_employees.sql",
+            "upsertTable": "scripts/warehouse_wwi_bigquery/upsert_dimension_employees.sql",
             "specificColumnTypes": [],
+            "dropColumn": "scripts/warehouse_wwi_bigquery/drop_column.sql",
+            "dropTable": "scripts/warehouse_wwi_bigquery/drop_table.sql",
             "primaryKey": "EmployeeKey",
             "modifyTable": [],
             "unitTests": [
@@ -304,24 +410,27 @@
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_dimension_employees_data.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_employees_data.sql"
                 },
                 {
                     "name": "Test DimEmployees Unknown Record Exists",
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_dimension_employees_unknown_record_exists.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_employees_unknown_record_exists.sql"
                 }
             ]
         },
         {
+            "rollbackVersion": 1,
             "name": "DimPaymentMethods",
             "schema": "WideWorldImportersDW2",
             "table": "DimPaymentMethods",
-            "createTable": "notebooks/scripts/warehouse_wwi_bigquery/create_dimension_payment_methods.sql",
-            "upsertTable": "notebooks/scripts/warehouse_wwi_bigquery/upsert_dimension_payment_methods.sql",
+            "createTable": "scripts/warehouse_wwi_bigquery/create_dimension_payment_methods.sql",
+            "upsertTable": "scripts/warehouse_wwi_bigquery/upsert_dimension_payment_methods.sql",
             "specificColumnTypes": [],
+            "dropColumn": "scripts/warehouse_wwi_bigquery/drop_column.sql",
+            "dropTable": "scripts/warehouse_wwi_bigquery/drop_table.sql",
             "primaryKey": "PaymentMethodKey",
             "modifyTable": [],
             "unitTests": [
@@ -360,24 +469,27 @@
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_dimension_paymentmethods_data.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_paymentmethods_data.sql"
                 },
                 {
                     "name": "Test DimPaymentMethods Unknown Record Exists",
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_dimension_paymentmethods_unknown_record_exists.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_paymentmethods_unknown_record_exists.sql"
                 }
             ]
         },
         {
+            "rollbackVersion": 1,
             "name": "DimStockItems",
             "schema": "WideWorldImportersDW2",
             "table": "DimStockItems",
-            "createTable": "notebooks/scripts/warehouse_wwi_bigquery/create_dimension_stock_items.sql",
-            "upsertTable": "notebooks/scripts/warehouse_wwi_bigquery/upsert_dimension_stock_items.sql",
+            "createTable": "scripts/warehouse_wwi_bigquery/create_dimension_stock_items.sql",
+            "upsertTable": "scripts/warehouse_wwi_bigquery/upsert_dimension_stock_items.sql",
             "specificColumnTypes": [],
+            "dropColumn": "scripts/warehouse_wwi_bigquery/drop_column.sql",
+            "dropTable": "scripts/warehouse_wwi_bigquery/drop_table.sql",
             "primaryKey": "StockItemKey",
             "modifyTable": [],
             "unitTests": [
@@ -470,24 +582,27 @@
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_dimension_stockitems_data.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_stockitems_data.sql"
                 },
                 {
                     "name": "Test DimStockItems Unknown Record Exists",
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_dimension_stockitems_unknown_record_exists.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_stockitems_unknown_record_exists.sql"
                 }
             ]
         },
         {
+            "rollbackVersion": 1,
             "name": "DimSuppliers",
             "schema": "WideWorldImportersDW2",
             "table": "DimSuppliers",
-            "createTable": "notebooks/scripts/warehouse_wwi_bigquery/create_dimension_suppliers.sql",
-            "upsertTable": "notebooks/scripts/warehouse_wwi_bigquery/upsert_dimension_suppliers.sql",
+            "createTable": "scripts/warehouse_wwi_bigquery/create_dimension_suppliers.sql",
+            "upsertTable": "scripts/warehouse_wwi_bigquery/upsert_dimension_suppliers.sql",
             "specificColumnTypes": [],
+            "dropColumn": "scripts/warehouse_wwi_bigquery/drop_column.sql",
+            "dropTable": "scripts/warehouse_wwi_bigquery/drop_table.sql",
             "primaryKey": "SupplierKey",
             "modifyTable": [],
             "unitTests": [
@@ -550,24 +665,27 @@
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_dimension_suppliers_data.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_suppliers_data.sql"
                 },
                 {
                     "name": "Test DimSuppliers Unknown Record Exists",
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_dimension_suppliers_unknown_record_exists.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_suppliers_unknown_record_exists.sql"
                 }
             ]
         },
         {
+            "rollbackVersion": 1,
             "name": "DimTransactionTypes",
             "schema": "WideWorldImportersDW2",
             "table": "DimTransactionTypes",
-            "createTable": "notebooks/scripts/warehouse_wwi_bigquery/create_dimension_transaction_types.sql",
-            "upsertTable": "notebooks/scripts/warehouse_wwi_bigquery/upsert_dimension_transaction_types.sql",
+            "createTable": "scripts/warehouse_wwi_bigquery/create_dimension_transaction_types.sql",
+            "upsertTable": "scripts/warehouse_wwi_bigquery/upsert_dimension_transaction_types.sql",
             "specificColumnTypes": [],
+            "dropColumn": "scripts/warehouse_wwi_bigquery/drop_column.sql",
+            "dropTable": "scripts/warehouse_wwi_bigquery/drop_table.sql",
             "primaryKey": "TransactionTypeKey",
             "modifyTable": [],
             "unitTests": [
@@ -606,24 +724,27 @@
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_dimension_transactiontypes_data.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_transactiontypes_data.sql"
                 },
                 {
                     "name": "Test DimTransactionTypes Unknown Record Exists",
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_dimension_transactiontypes_unknown_record_exists.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_dimension_transactiontypes_unknown_record_exists.sql"
                 }
             ]
         },
         {
+            "rollbackVersion": 1,
             "name": "DimDates",
             "schema": "WideWorldImportersDW2",
             "table": "DimDates",
-            "createTable": "notebooks/scripts/warehouse_wwi_bigquery/create_dimension_dates.sql",
-            "upsertTable": "notebooks/scripts/warehouse_wwi_bigquery/upsert_dimension_dates.sql",
+            "createTable": "scripts/warehouse_wwi_bigquery/create_dimension_dates.sql",
+            "upsertTable": "scripts/warehouse_wwi_bigquery/upsert_dimension_dates.sql",
             "specificColumnTypes": [],
+            "dropColumn": "scripts/warehouse_wwi_bigquery/drop_column.sql",
+            "dropTable": "scripts/warehouse_wwi_bigquery/drop_table.sql",
             "primaryKey": "Date",
             "modifyTable": [],
             "unitTests": [
@@ -722,12 +843,15 @@
     ],
     "factTables": [
         {
+            "rollbackVersion": 1,
             "name": "FctMovements",
             "schema": "WideWorldImportersDW2",
             "table": "FctMovements",
-            "createTable": "notebooks/scripts/warehouse_wwi_bigquery/create_fact_movements.sql",
-            "upsertTable": "notebooks/scripts/warehouse_wwi_bigquery/upsert_fact_movements.sql",
+            "createTable": "scripts/warehouse_wwi_bigquery/create_fact_movements.sql",
+            "upsertTable": "scripts/warehouse_wwi_bigquery/upsert_fact_movements.sql",
             "specificColumnTypes": [],
+            "dropColumn": "scripts/warehouse_wwi_bigquery/drop_column.sql",
+            "dropTable": "scripts/warehouse_wwi_bigquery/drop_table.sql",
             "primaryKey": "MovementKey",
             "modifyTable": [],
             "unitTests": [
@@ -816,17 +940,20 @@
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_fact_movements_data.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_fact_movements_data.sql"
                 }
             ]
         },
         {
+            "rollbackVersion": 1,
             "name": "FctOrders",
             "schema": "WideWorldImportersDW2",
             "table": "FctOrders",
-            "createTable": "notebooks/scripts/warehouse_wwi_bigquery/create_fact_orders.sql",
-            "upsertTable": "notebooks/scripts/warehouse_wwi_bigquery/upsert_fact_orders.sql",
+            "createTable": "scripts/warehouse_wwi_bigquery/create_fact_orders.sql",
+            "upsertTable": "scripts/warehouse_wwi_bigquery/upsert_fact_orders.sql",
             "specificColumnTypes": [],
+            "dropColumn": "scripts/warehouse_wwi_bigquery/drop_column.sql",
+            "dropTable": "scripts/warehouse_wwi_bigquery/drop_table.sql",
             "primaryKey": "OrderKey",
             "modifyTable": [],
             "unitTests": [
@@ -1020,17 +1147,20 @@
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_fact_orders_data.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_fact_orders_data.sql"
                 }
             ]
         },
         {
+            "rollbackVersion": 1,
             "name": "FctPurchases",
             "schema": "WideWorldImportersDW2",
             "table": "FctPurchases",
-            "createTable": "notebooks/scripts/warehouse_wwi_bigquery/create_fact_purchases.sql",
-            "upsertTable": "notebooks/scripts/warehouse_wwi_bigquery/upsert_fact_purchases.sql",
+            "createTable": "scripts/warehouse_wwi_bigquery/create_fact_purchases.sql",
+            "upsertTable": "scripts/warehouse_wwi_bigquery/upsert_fact_purchases.sql",
             "specificColumnTypes": [],
+            "dropColumn": "scripts/warehouse_wwi_bigquery/drop_column.sql",
+            "dropTable": "scripts/warehouse_wwi_bigquery/drop_table.sql",
             "primaryKey": "PurchaseKey",
             "modifyTable": [],
             "unitTests": [
@@ -1135,17 +1265,20 @@
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_fact_purchases_data.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_fact_purchases_data.sql"
                 }
             ]
         },
         {
+            "rollbackVersion": 1,
             "name": "FctSales",
             "schema": "WideWorldImportersDW2",
             "table": "FctSales",
-            "createTable": "notebooks/scripts/warehouse_wwi_bigquery/create_fact_sales.sql",
-            "upsertTable": "notebooks/scripts/warehouse_wwi_bigquery/upsert_fact_sales.sql",
+            "createTable": "scripts/warehouse_wwi_bigquery/create_fact_sales.sql",
+            "upsertTable": "scripts/warehouse_wwi_bigquery/upsert_fact_sales.sql",
             "specificColumnTypes": [],
+            "dropColumn": "scripts/warehouse_wwi_bigquery/drop_column.sql",
+            "dropTable": "scripts/warehouse_wwi_bigquery/drop_table.sql",
             "primaryKey": "SaleKey",
             "modifyTable": [],
             "unitTests": [
@@ -1317,17 +1450,20 @@
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_fact_sales_data.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_fact_sales_data.sql"
                 }
             ]
         },
         {
+            "rollbackVersion": 1,
             "name": "FctStockHoldings",
             "schema": "WideWorldImportersDW2",
             "table": "FctStockHoldings",
-            "createTable": "notebooks/scripts/warehouse_wwi_bigquery/create_fact_stock_holdings.sql",
-            "upsertTable": "notebooks/scripts/warehouse_wwi_bigquery/upsert_fact_stock_holdings.sql",
+            "createTable": "scripts/warehouse_wwi_bigquery/create_fact_stock_holdings.sql",
+            "upsertTable": "scripts/warehouse_wwi_bigquery/upsert_fact_stock_holdings.sql",
             "specificColumnTypes": [],
+            "dropColumn": "scripts/warehouse_wwi_bigquery/drop_column.sql",
+            "dropTable": "scripts/warehouse_wwi_bigquery/drop_table.sql",
             "primaryKey": "StockHoldingKey",
             "modifyTable": [],
             "unitTests": [
@@ -1398,17 +1534,20 @@
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_fact_stockholdings_data.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_fact_stockholdings_data.sql"
                 }
             ]
         },
         {
+            "rollbackVersion": 1,
             "name": "FctTransactions",
             "schema": "WideWorldImportersDW2",
             "table": "FctTransactions",
-            "createTable": "notebooks/scripts/warehouse_wwi_bigquery/create_fact_transactions.sql",
-            "upsertTable": "notebooks/scripts/warehouse_wwi_bigquery/upsert_fact_transactions.sql",
+            "createTable": "scripts/warehouse_wwi_bigquery/create_fact_transactions.sql",
+            "upsertTable": "scripts/warehouse_wwi_bigquery/upsert_fact_transactions.sql",
             "specificColumnTypes": [],
+            "dropColumn": "scripts/warehouse_wwi_bigquery/drop_column.sql",
+            "dropTable": "scripts/warehouse_wwi_bigquery/drop_table.sql",
             "primaryKey": "TransactionKey",
             "modifyTable": [],
             "unitTests": [
@@ -1519,11 +1658,12 @@
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "notebooks/scripts/warehouse_wwi_bigquery/tests/test_fact_transactions_data.sql"
+                    "testScript": "scripts/warehouse_wwi_bigquery/tests/test_fact_transactions_data.sql"
                 }
             ]
         }
     ],
     "test": true,
-    "testRecordCount": 1000
+    "testRecordCount": 1000,
+    "loadTableExists": "scripts/load_wwi_mssql/load_table_exists.sql"
 }

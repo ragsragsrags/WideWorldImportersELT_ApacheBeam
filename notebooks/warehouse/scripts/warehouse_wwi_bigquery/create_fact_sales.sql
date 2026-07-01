@@ -1,0 +1,26 @@
+CREATE TABLE IF NOT EXISTS << Database >>.<< Schema >>.<< Table >>
+(
+    SaleKey INTEGER,
+    CityKey INTEGER,
+    CustomerKey INTEGER,
+    BillToCustomerKey INTEGER,
+    StockItemKey INTEGER,
+    InvoiceDateKey DATE,
+    DeliveryDateKey DATE,
+    SalespersonKey INTEGER,
+    WWIInvoiceID INTEGER,
+    WWIInvoiceLineID INTEGER,
+    Description STRING,
+    Package STRING,
+    Quantity INTEGER,
+    UnitPrice NUMERIC(18, 2),
+    TaxRate NUMERIC(18, 3),
+    TotalExcludingTax NUMERIC(18, 2),
+    TaxAmount NUMERIC(18, 2),
+    Profit NUMERIC(18, 2),
+    TotalIncludingTax NUMERIC(18, 2),
+    TotalDryItems INTEGER,
+    TotalChillerItems INTEGER,
+    LoadDate DATETIME,
+    LastLoadDate DATETIME
+);

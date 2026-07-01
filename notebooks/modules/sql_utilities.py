@@ -138,12 +138,12 @@ def replace_sql_tables(sql, tables = [], database_type = "mssql"):
 
     return sql
 
-def get_sql_from_script(path, values = [], tables = [], database_type = "mssql"):
+def get_sql_from_script(path, values = [], tables = [], database_type = "mssql", directory = ""):
     sql = ''
     
     # path = f"{osPath}/{path}"
     
-    with open(path, 'r', encoding='utf-8') as f:
+    with open(f"{directory}{path}", 'r', encoding='utf-8') as f:
         sql = f.read()
 
     sql = replace_sql_values(sql, values)

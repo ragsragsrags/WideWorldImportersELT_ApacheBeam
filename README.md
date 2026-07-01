@@ -4,6 +4,7 @@ This is an end-to-end ELT of Microsoft's sample WideWorldImporters (WWI) databas
 + Apache Beam familiarization - This project uses Apache Beam to create pipelines for its ease of use and also for distributed capabilities.  The transformation is mostly done in the sql, to learn more of its built-in transformations, try this site: https://tour.beam.apache.org/
 + Changing table dimensions - This project also aims to solve the changing table dimensions.  If there were added or modified columns in the load or warehouse tables.
 + Using custom spark runner as this is good for migrating data in bulk specially to cloud storage such as bigquery.
++ Rollback to previous load - This project adds a process to rollback to a previous load in a different process.
 
 This project has three types of data migration, for comparison:
 + mssql - Using the pyodbc library.
@@ -34,10 +35,19 @@ Relevant documents
 + BigQuery Spark - https://github.com/GoogleCloudDataproc/spark-bigquery-connector 
 
 Workflow of ELT
-![alt text](/resources/readme_images/image.png)
+![alt text](/resources/readme_images/process_wwi-graph.png)
 + set_cutoff_date - set the cutoff date so both load and warehouse use the same cutoff date
++ get_load_wwi_copy_files - archive the load pipeline for use in rollback
 + load_wwi - extract and load data to warehouse database
-+ warehouse_wwi - transform data to warehouse tables 
++ get_warehouse_wwi_copy_files - archive the warehouse pipeline for use in rollback 
++ warehouse_wwi_dimensionTables - transform data to dimension warehouse tables
++ warehouse_wwi_factTables - transform data to fact warehouse tables 
+
+Workflow of Rollback ELT
+![alt text](/resources/readme_images/process_wwi_rollback-graph.png)
++ rollback_load_wwi - rollback load data to the configured date
++ rollback_warehouse_wwi_dimensionTables - rollback warehouse dimension data to the configured date
++ rollback_warehouse_wwi_factTables - rollback warehouse fact data to the configured date
 
 Instructions for Sql Server and WWI databases
 + Download and install SSMS from: https://learn.microsoft.com/en-us/ssms/install/install
@@ -66,34 +76,36 @@ Instructions for coding in Visual Studio Code using virtual environment in Windo
         + pyodbc: pip install pyodbc==5.3.0
         + pandas: pip install pandas==2.2.3
         + bigquery: pip install google-cloud-bigquery==3.41.0
-        + setuptools: pip install setuptools==82.0.1
+        + setuptools: pip install setuptools==81.0.0
 
 Instructions for Airflow Orchestration
 + Download and install Docker Desktop: https://docs.docker.com/desktop/setup/install/windows-install/
 + To build the application in Visual Studio Code:
     - In Terminal Window, build the application using this command: docker compose up -d --build
       or, if it's already built then this command: docker compose up -d 
-    - You should be able see the process_wwi in http://localhost:8080/dags.  
-    - The main configuration is the process_wwi.json. In this file, the following configuration values:
+    - You should be able see the processes in http://localhost:8080/dags.  There are two processes:
+        + process_wwi - processes the ELT
+        + process_wwi_rollback - processes the rollback of ELT to previous date 
+    - The configuration of the process_wwi is process_wwi.json. In this file, the following configuration values:
         + cutoffDate: Specifies the cutoffdate of the process.  The format is YYYY-MM-DD HH:MM:SS, e.g. "2013-01-01 00:00:00". To get the existing date, leave it blank. 
         + loadConfigPath: This is the path for the load pipeline. Samples inside the folder:
             - jdbc mssql 
                 + process_wwi_load_mssql_2013-01-01.json - loads 2013-01-01 cutoff
                 + process_wwi_load_msqql_2014-01-01.json - loads 2014-01-01 cutoff, this also has modified table in Cities and Cities_Archive table
-                + process_wwi_load_mssql_current.json - load the current date
+                + process_wwi_load_mssql_latest.json - load the current date
             - spark mssql
                 + process_wwi_load_spark_mssql_2013-01-01.json - loads 2013-01-01 cutoff
                 + process_wwi_load_spark_mssql_2014-01-01.json - loads 2014-01-01 cutoff, this also has modified table in Cities and Cities_Archive table
-                + process_wwi_load_spark_mssql_current.json - load the current date
+                + process_wwi_load_spark_mssql_latest.json - load the current date
             - biquery - combination of spark and bigquery client
                 + process_wwi_load_bigquery_2013-01-01.json - loads 2013-01-01 cutoff
                 + process_wwi_load_bigquery_2014-01-01.json - loads 2014-01-01 cutoff, this also has modified table in Cities and Cities_Archive table
-                + process_wwi_load_bigquery_current.json - load the current date
+                + process_wwi_load_bigquery_latest.json - load the current date
         + warehouseConfigPath: This is the path for the warehouse pipelines.  Samples inside the folder:
             - jdbc mssql
                 + process_wwi_warehouse_mssql_2013-01-01.json - warehouse 2013-01-01 cutoff
                 + process_wwi_warehouse_msqql_2014-01-01.json - warehouse 2014-01-01 cutoff, this also has modified table in DimCities
-                + process_wwi_warehouse_mssql_current.json - warehouse the current date
+                + process_wwi_warehouse_mssql_latest.json - warehouse the current date
             - spark mssql
                 + process_wwi_warehouse_spark_mssql_2013-01-01.json - warehouse 2013-01-01 cutoff
                 + process_wwi_warehouse_spark_mssql_2014-01-01.json - warehouse 2014-01-01 cutoff, this also has modified table in DimCities
@@ -101,11 +113,16 @@ Instructions for Airflow Orchestration
             - bigquery - combination of spark and bigquery client
                 + process_wwi_warehouse_bigquery_2013-01-01.json - warehouse 2013-01-01 cutoff
                 + process_wwi_warehouse_bigquery_2014-01-01.json - warehouse 2014-01-01 cutoff, this also has modified table in DimCities
-                + process_wwi_warehouse_bigquery_current.json - warehouse the current date
+                + process_wwi_warehouse_bigquery_latest.json - warehouse the current date
         + noOfLoadTablesPerProcess: This is the number of load tables processed per process if you want it to load concurrently.  If you want to process all tables in 1 process then set this to 0 or the total number of load tables.
         + noOfWarehouseDimensionTablesPerProcess: This is the number of dimension warehouse tables per process.  If you want to process all tables in 1 process then set this to 0 or the total number of dimension warehouse tables.
         + noOfWarehouseFactTablesPerProcess: This is the number of fact warehouse tables per process.  If you want to process all tables in 1 process then set this to 0 or the total number of fact warehouse tables.
         + newCutoffDate: Just leave this
+    - The configuration of the process_wwi_rollback is process_wwi_rollback.json (mssql) and process_wwi_rollback_bq.json (bigquery). In this file, the following main configuration values:
+        + cutoffDate - the cutoff date to rollback the data.
+        + noOfLoadTablesPerProcess - This is the number of load tables processed per process if you want it to load concurrently.  If you want to process all tables in 1 process then set this to 0 or the total number of load tables.
+        + noOfWarehouseDimensionTablesPerProcess - This is the number of dimension warehouse tables per process.  If you want to process all tables in 1 process then set this to 0 or the total number of dimension warehouse tables.
+        + noOfWarehouseFactTablesPerProcess - This is the number of fact warehouse tables per process.  If you want to process all tables in 1 process then set this to 0 or the total number of fact warehouse tables.
 
 This project has 2 main pipelines inside the notebooks folder:
 + load_wwi.ipynb - loads and extracts data to warehouse database
@@ -113,10 +130,13 @@ This project has 2 main pipelines inside the notebooks folder:
 
 This are the table to check for load/warehouse histories in the warehouse database:
 + LoadHistory - contains load history
++ LoadHistoryDate - contains the load history batch date
 + ModifyLoadHistory - contains modified load history table dimension changes
 + WarehouseHistory - contains warehouse history
++ WarehouseHistoryDate - contains the warehouse history batch date
 + ModifyWarehouseHistory - contains modified warehouse history table dimension changes
 
 Additional Notes:
 + If you are migrating to bigquery, be sure to add the bigquery credentials in resources/credentials/bigquery_token.json.  See this document for creation: https://developers.google.com/workspace/guides/create-credentials
 + You need to have at least 8gb avaiable memory
++ Increment rollbackVersion in the warehouse config if there is calculation changes but no added/deleted columns or if you want it to force it to the recreate table 
