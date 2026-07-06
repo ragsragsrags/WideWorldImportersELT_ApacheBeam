@@ -10,7 +10,7 @@
     "sparkCoresMax": "2",
     "sparkNetworkTimeout": "600s",
     "sparkExecutorHeartBeatInterval": "599s",
-    "isRollback": true, 
+    "isRollback": false, 
     "runner": "DirectRunner",
     "runnerOptions": {
         "DirectRunner": [

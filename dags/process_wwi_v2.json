@@ -1,0 +1,24 @@
+{
+    "cutoffDate": "2013-01-01 00:00:00",
+    "loadConfigPath": "/dags/process_wwi_load_mssql_2014-01-01.json",
+    "warehouseConfigPath": "/dags/process_wwi_warehouse_mssql_2014-01-01.json",
+    "noOfLoadTablesPerProcess": 24,
+    "noOfWarehouseDimensionTablesPerProcess": 5,
+    "noOfWarehouseFactTablesPerProcess": 3,
+    "newCutoffDate": "2013-01-01 00:00:00",
+    "loadDirectory": "/notebooks/load/",
+    "githubLoadDirectory": "notebooks/load",
+    "loadProcessDirectory": "/dags/load_wwi_archive",
+    "warehouseDirectory": "/notebooks/warehouse/",
+    "githubWarehouseDirectory": "notebooks/warehouse",
+    "warehouseProcessDirectory": "/dags/warehouse_wwi_archive",
+    "sqlUtilitiesPath": "/notebooks/modules/sql_utilities.py",
+    "copyFilesType": {
+        "type": "github",
+        "tokenPath": "/resources/credentials/github_token.txt",
+        "owner": "ragsragsrags",
+        "repo": "WideWorldImportersELT_ApacheBeam",
+        "branch": "dev",
+        "releaseBranch": "release"
+    }
+}

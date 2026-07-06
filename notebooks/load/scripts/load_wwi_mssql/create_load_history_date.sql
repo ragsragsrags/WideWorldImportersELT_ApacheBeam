@@ -17,7 +17,9 @@ IF NOT EXISTS
 		LoadDate DATETIME2(6),
 		Status NVARCHAR(50), 
 		ProcessedDate DATETIME2(6),
-		ArchivePath NVARCHAR(500)
+		ArchivePath NVARCHAR(500),
+		ReleaseGithubRepo NVARCHAR(500),
+		ReleaseGithubBranch NVARCHAR(500)
 	)
 
 	END

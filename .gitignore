@@ -2,4 +2,10 @@
 # these are the default directory names, adjust/add to fit your needs
 .venv/
 .vscode/
-resources/credentials/bigquery_token.json
+resources/credentials/
+dags/load_wwi_archive/
+dags/warehouse_wwi_archive/
+logs/dag_id=process_wwi_rollback/
+logs/dag_id=process_wwi_v2/
+logs/dag_processor/
+test.ipynb
