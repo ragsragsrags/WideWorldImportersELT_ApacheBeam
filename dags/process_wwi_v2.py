@@ -45,6 +45,8 @@ print(f"load_process_directory: {load_process_directory}")
 print(f"warehouse_directory: {warehouse_directory}")
 print(f"warehouse_process_directory: {warehouse_process_directory}")
 print(f"sql_utilities_file: {sql_utilities_file}")
+print(f"release_github_repo: {release_github_repo}")
+print(f"release_github_branch: {release_github_branch}")
 
 f = open(load_config_file,)
 load_config = json.load(f)
@@ -349,6 +351,9 @@ def get_process_wwi_files():
             token
         )
         extract_folder_from_zip(zip_bytes, config["githubLoadDirectory"], load_process_directory)
+        os.makedirs(f"{load_process_directory}/modules", exist_ok=True)
+        os.makedirs(f"{load_process_directory}/outputs", exist_ok=True)
+        extract_folder_from_zip(zip_bytes, config["githubModulesDirectory"], f"{load_process_directory}/modules")
         extract_folder_from_zip(zip_bytes, config["githubWarehouseDirectory"], warehouse_process_directory)
         create_replace_branch(token)
 
