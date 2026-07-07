@@ -30,14 +30,20 @@ INSERT INTO [<< Schema >>].[<< Table >>]
     LoadDate,
     Status, 
     ProcessedDate,
-    ArchivePath
+    ArchivePath,
+    ReleaseGithubRepo,
+    ReleaseGithubBranch,
+    ReleaseGithubTag
 )
 VALUES
 (
     '<< NewCutoffDate >>', 
     '<< Status >>', 
     CURRENT_TIMESTAMP,
-    '<< ArchivePath >>'   
+    '<< ArchivePath >>',
+    '<< ReleaseGithubRepo >>',
+    '<< ReleaseGithubBranch >>',
+    '<< ReleaseGithubTag >>'
 )
 
 END
