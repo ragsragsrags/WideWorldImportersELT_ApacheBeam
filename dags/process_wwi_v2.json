@@ -19,7 +19,7 @@
         "tokenPath": "/resources/credentials/github_token.txt",
         "owner": "ragsragsrags",
         "repo": "WideWorldImportersELT_ApacheBeam",
-        "branch": "dev",
-        "releaseBranch": "release"
-    }
+        "branch": "dev"
+    },
+    "githubLoadProcessDirectory": "/opt/airflow/dags/load_wwi_archive/dv1.0.0"
 }

@@ -19,7 +19,8 @@ IF NOT EXISTS
 		ProcessedDate DATETIME2(6),
 		ArchivePath NVARCHAR(500),
 		ReleaseGithubRepo NVARCHAR(500),
-		ReleaseGithubBranch NVARCHAR(500)
+		ReleaseGithubBranch NVARCHAR(500),
+		ReleaseGithubTag NVARCHAR(500)
 	)
 
 	END

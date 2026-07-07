@@ -10,6 +10,39 @@ from datetime import timedelta, datetime
 from airflow.models import DAG
 from airflow.providers.papermill.operators.papermill import PapermillOperator
 
+def get_latest_tag_from_branch(token):
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github+json"
+    }
+
+    try:
+        owner = config["copyFilesType"]["owner"]
+        repo = config["copyFilesType"]["repo"]
+        branch = config["copyFilesType"]["branch"]
+        
+        # 1. Get latest commit SHA from branch
+        branch_url = f"https://api.github.com/repos/{owner}/{repo}/branches/{branch}"
+        branch_resp = requests.get(branch_url, headers=headers)
+        branch_resp.raise_for_status()
+        latest_commit_sha = branch_resp.json()["commit"]["sha"]
+
+        # 2. Get all tags
+        tags_url = f"https://api.github.com/repos/{owner}/{repo}/tags"
+        tags_resp = requests.get(tags_url, headers=headers)
+        tags_resp.raise_for_status()
+        tags = tags_resp.json()
+
+        latest_tag = list(filter(lambda tag: tag["commit"]["sha"] == latest_commit_sha, tags))
+
+        if len(latest_tag) > 0:
+            return latest_tag[0]["name"]
+        else:
+            raise Exception(f"Latest commit is not associated to tag in {repo} branch {branch}.")
+
+    except Exception as e:
+        raise Exception(e)
+
 path = os.getcwd()
 config_file = f"{path}/dags/process_wwi_v2.json"
 
@@ -31,9 +64,14 @@ warehouse_process_directory = f"{path}{config["warehouseProcessDirectory"]}/{con
 sql_utilities_file = f"{path}{config["sqlUtilitiesPath"]}"
 release_github_repo = ""
 release_github_branch = ""
+release_github_tag = ""
+github_token = ""
 if config["copyFilesType"]["type"] == "github":
     release_github_repo = config["copyFilesType"]["repo"]
-    release_github_branch = f"{config["copyFilesType"]["releaseBranch"]}_{cutoff_date.replace(" ", "").replace("-", "").replace(":", "")}"
+    release_github_branch = config["copyFilesType"]["branch"]
+    with open(f"{path}/{config["copyFilesType"]["tokenPath"]}", 'r', encoding='utf-8') as file:
+        github_token = file.read()
+    release_github_tag = get_latest_tag_from_branch(github_token)
 
 print(f"cutoff_date: {cutoff_date}")
 print(f"load_config_file: {load_config_file}")
@@ -47,6 +85,7 @@ print(f"warehouse_process_directory: {warehouse_process_directory}")
 print(f"sql_utilities_file: {sql_utilities_file}")
 print(f"release_github_repo: {release_github_repo}")
 print(f"release_github_branch: {release_github_branch}")
+print(f"github_token: {github_token}")
 
 f = open(load_config_file,)
 load_config = json.load(f)
@@ -68,7 +107,6 @@ def set_cutoff_date(name: str, cutoff_date, config_file):
         global current_date
         if config["cutoffDate"] == "":
             return current_date
-            # datetime.strptime(current_date.strftime("%Y-%m-%d 00:00:00"), "%Y-%m-%d %H:%M:%S")
         else:
             datetime.strptime(config["cutoffDate"], "%Y-%m-%d %H:%M:%S")
 
@@ -88,38 +126,27 @@ def single_task():
     print(f"single_task")
 
 def get_load_wwi(idx_process, tables):
+    final_load_process_directory = load_process_directory
+    
+    if config["copyFilesType"]["type"] == "github":
+        final_load_process_directory = config["githubLoadProcessDirectory"]
+    
     return PapermillOperator(
         task_id=f"load_wwi{idx_process}",
-        input_nb=f"{load_process_directory}/load_wwi.ipynb",
-        output_nb=f"{load_process_directory}/outputs/load_wwi{idx_process}_{config["newCutoffDate"]}_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
+        input_nb=f"{final_load_process_directory}/load_wwi.ipynb",
+        output_nb=f"{final_load_process_directory}/outputs/load_wwi{idx_process}_{config["newCutoffDate"]}_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
         parameters={
             "fromNotebook": False,
             "configFile": load_config_file,
             "newCutoffDate": config["newCutoffDate"],
             "tables": tables,
-            "sqlUtilFilePath": f"{load_process_directory}/modules/sql_utilities.py",
-            "script_directory": f"{load_process_directory}/",
-            "archivePath": load_process_directory,
+            "sqlUtilFilePath": f"{final_load_process_directory}/modules/sql_utilities.py",
+            "script_directory": f"{final_load_process_directory}/",
+            "archivePath": final_load_process_directory,
             "isInsertLoadHistoryDate": False,
             "release_github_repo": release_github_repo,
-            "release_github_branch": release_github_branch
-        }
-    )
-
-def get_load_wwi_insert_load_history_date():
-    return PapermillOperator(
-        task_id=f"load_wwi_insert_load_history_date",
-        input_nb=f"{load_process_directory}/load_wwi.ipynb",
-        output_nb=f"{load_process_directory}/outputs/load_wwi_insert_load_history_date_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
-        parameters={
-            "fromNotebook": False,
-            "configFile": load_config_file,
-            "newCutoffDate": config["newCutoffDate"],
-            "tables": [],
-            "sqlUtilFilePath": f"{load_process_directory}/modules/sql_utilities.py",
-            "script_directory": f"{load_process_directory}/",
-            "archivePath": load_process_directory,
-            "isInsertLoadHistoryDate": True
+            "release_github_branch": release_github_branch,
+            "release_github_tag": release_github_tag
         }
     )
 
@@ -262,10 +289,15 @@ def extract_folder_from_zip(zip_bytes, folder_path, output_dir):
         if not found:
             raise Exception(f"Folder '{folder_path}' not found in ZIP.")
 
-def download_repo_zip(owner, repo, branch, token=None):
+def download_repo_zip(owner, repo, branch, token=None, tag=None):
     """Download the entire repo as a ZIP and return a BytesIO object."""
-    url = f"https://github.com/{owner}/{repo}/archive/refs/heads/{branch}.zip"
+    if tag:
+        url = f"https://github.com/{owner}/{repo}/archive/refs/tags/{tag}.zip"
+    else:
+        url = f"https://github.com/{owner}/{repo}/archive/refs/heads/{branch}.zip"
+    
     headers = {}
+    
     if token:
         headers["Authorization"] = f"token {token}"
 
@@ -275,64 +307,65 @@ def download_repo_zip(owner, repo, branch, token=None):
         raise Exception(f"Failed to download ZIP: {r.status_code} {r.text}")
     return io.BytesIO(r.content)
 
-def create_replace_branch(token):
-    base_url = f"https://api.github.com/repos/{config["copyFilesType"]["owner"]}/{config["copyFilesType"]["repo"]}"
-    headers = {
-        "Authorization": f"token {token}",
-        "Accept": "application/vnd.github+json"
-    }
 
-    def get_branch_sha(branch):
-        """Get the latest commit SHA of a branch."""
-        url = f"{base_url}/git/ref/heads/{branch}"
-        resp = requests.get(url, headers=headers)
-        if resp.status_code == 200:
-            return resp.json()["object"]["sha"]
-        elif resp.status_code == 404:
-            return None
-        else:
-            raise Exception(f"Error fetching branch {branch}: {resp.text}")
+# def create_replace_branch(token):
+#     base_url = f"https://api.github.com/repos/{config["copyFilesType"]["owner"]}/{config["copyFilesType"]["repo"]}"
+#     headers = {
+#         "Authorization": f"token {token}",
+#         "Accept": "application/vnd.github+json"
+#     }
+
+#     def get_branch_sha(branch):
+#         """Get the latest commit SHA of a branch."""
+#         url = f"{base_url}/git/ref/heads/{branch}"
+#         resp = requests.get(url, headers=headers)
+#         if resp.status_code == 200:
+#             return resp.json()["object"]["sha"]
+#         elif resp.status_code == 404:
+#             return None
+#         else:
+#             raise Exception(f"Error fetching branch {branch}: {resp.text}")
         
-    def create_branch(branch, sha):
-        """Create a new branch from a given commit SHA."""
-        url = f"{base_url}/git/refs"
-        payload = {
-            "ref": f"refs/heads/{branch}",
-            "sha": sha
-        }
-        resp = requests.post(url, json=payload, headers=headers)
-        if resp.status_code == 201:
-            print(f"✅ Branch '{branch}' created successfully.")
-        elif resp.status_code == 422 and "Reference already exists" in resp.text:
-            print(f"⚠️ Branch '{branch}' already exists.")
-        else:
-            raise Exception(f"Error creating branch: {resp.text}")
+#     def create_branch(branch, sha):
+#         """Create a new branch from a given commit SHA."""
+#         url = f"{base_url}/git/refs"
+#         payload = {
+#             "ref": f"refs/heads/{branch}",
+#             "sha": sha
+#         }
+#         resp = requests.post(url, json=payload, headers=headers)
+#         if resp.status_code == 201:
+#             print(f"✅ Branch '{branch}' created successfully.")
+#         elif resp.status_code == 422 and "Reference already exists" in resp.text:
+#             print(f"⚠️ Branch '{branch}' already exists.")
+#         else:
+#             raise Exception(f"Error creating branch: {resp.text}")
 
-    def update_branch(branch, sha):
-        """Force update an existing branch to point to a new commit SHA."""
-        url = f"{base_url}/git/refs/heads/{branch}"
-        payload = {
-            "sha": sha,
-            "force": True
-        }
-        resp = requests.patch(url, json=payload, headers=headers)
-        if resp.status_code == 200:
-            print(f"✅ Branch '{branch}' updated to new commit.")
-        else:
-            raise Exception(f"❌ Error updating branch: {resp.text}")        
+#     def update_branch(branch, sha):
+#         """Force update an existing branch to point to a new commit SHA."""
+#         url = f"{base_url}/git/refs/heads/{branch}"
+#         payload = {
+#             "sha": sha,
+#             "force": True
+#         }
+#         resp = requests.patch(url, json=payload, headers=headers)
+#         if resp.status_code == 200:
+#             print(f"✅ Branch '{branch}' updated to new commit.")
+#         else:
+#             raise Exception(f"❌ Error updating branch: {resp.text}")        
 
-    source_sha = get_branch_sha(config["copyFilesType"]["branch"])
+#     source_sha = get_branch_sha(config["copyFilesType"]["branch"])
     
-    if not source_sha:
-        raise Exception(f"Source branch does not exists.")
+#     if not source_sha:
+#         raise Exception(f"Source branch does not exists.")
     
-    target_branch = release_github_branch
-    target_sha = get_branch_sha(target_branch)
+#     target_branch = release_github_branch
+#     target_sha = get_branch_sha(target_branch)
 
-    if target_sha:
-        update_branch(target_branch, source_sha)
-    else:
-        create_branch(target_branch, source_sha)
+#     if target_sha:
+#         update_branch(target_branch, source_sha)
+#     else:
+#         create_branch(target_branch, source_sha)
 
 @task 
 def get_process_wwi_files():
@@ -341,21 +374,30 @@ def get_process_wwi_files():
         get_load_wwi_copy_files()
         get_warehouse_wwi_copy_files()
     elif config["copyFilesType"]["type"] == "github":
-        token = ""
-        with open(f"{path}/{config["copyFilesType"]["tokenPath"]}", 'r', encoding='utf-8') as file:
-            token = file.read()
         zip_bytes = download_repo_zip(
             config["copyFilesType"]["owner"], 
             config["copyFilesType"]["repo"], 
             config["copyFilesType"]["branch"], 
-            token
+            github_token,
+            release_github_tag
         )
-        extract_folder_from_zip(zip_bytes, config["githubLoadDirectory"], load_process_directory)
-        os.makedirs(f"{load_process_directory}/modules", exist_ok=True)
-        os.makedirs(f"{load_process_directory}/outputs", exist_ok=True)
-        extract_folder_from_zip(zip_bytes, config["githubModulesDirectory"], f"{load_process_directory}/modules")
-        extract_folder_from_zip(zip_bytes, config["githubWarehouseDirectory"], warehouse_process_directory)
-        create_replace_branch(token)
+        github_load_process_directory = f"{path}{config["loadProcessDirectory"]}/{release_github_tag}"
+        f = open(config_file, )
+        config1 = json.load(f)
+        f.close()
+
+        config1["githubLoadProcessDirectory"] = github_load_process_directory
+        with open(config_file, 'w', encoding='utf-8') as file:
+            json.dump(config1, file, indent=4, ensure_ascii=False)
+        
+        extract_folder_from_zip(zip_bytes, config["githubLoadDirectory"], github_load_process_directory)
+        os.makedirs(f"{github_load_process_directory}/modules", exist_ok=True)
+        os.makedirs(f"{github_load_process_directory}/outputs", exist_ok=True)
+        extract_folder_from_zip(zip_bytes, config["githubModulesDirectory"], f"{github_load_process_directory}/modules")
+        shutil.copy2(load_config_file, f"{github_load_process_directory}/load_wwi_{cutoff_date.replace("-", "").replace(":", "")}.json")
+        # extract_folder_from_zip(zip_bytes, config["githubWarehouseDirectory"], warehouse_process_directory)
+        
+        # create_replace_branch(token)
 
 with DAG(
     dag_id="process_wwi_v2",
