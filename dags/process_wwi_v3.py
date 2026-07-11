@@ -264,8 +264,9 @@ def get_process_wwi_files():
         )
 
         archive_folder = f"{copy_files_type["type"]}_{latest_release["tag_name"]}"
-        latest_release_config = get_github_json(zip_bytes, f"/dags/process_wwi_v3.json"), 
-        
+        latest_release_config = get_github_json(zip_bytes, f"/dags/process_wwi_v3.json") 
+        print(f"latest_release_config: {latest_release_config}")
+
         if latest_release_config["version"] > config["version"] and raise_error_when_new_version_found == True:
             raise Exception(f"DAG version {latest_release_config["version"]} found in release is > than existing DAG version {config["version"]}.")
         elif latest_release_config["version"] > config["version"] and raise_error_when_new_version_found == False:
