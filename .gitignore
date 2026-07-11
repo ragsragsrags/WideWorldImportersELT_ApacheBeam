@@ -5,9 +5,13 @@
 resources/credentials/
 dags/load_wwi_archive/
 dags/warehouse_wwi_archive/
+dags/process_wwi_archive/
 dags/resources/
 dags/credentials/
 logs/dag_id=process_wwi_rollback/
 logs/dag_id=process_wwi_v2/
 logs/dag_processor/
+logs/
 test.ipynb
+plugins/process_wwi_v3_copy.json
+plugins/process_wwi_v3_copy.py

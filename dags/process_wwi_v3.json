@@ -1,0 +1,79 @@
+{
+    "version": 1,
+    "cutoffDate": "2013-01-01 00:00:00",
+    "loadConfigEnvironment": "development",
+    "warehouseConfigEnvironment": "development",
+    "noOfWorkers": 2,
+    "newCutoffDate": "2013-01-01 00:00:00",
+    "loadDirectories": {
+        "copy": [
+            {
+                "name": "archive",
+                "source": "/notebooks/load",
+                "destination": "/dags/process_wwi_archive/{archive_folder}/load"
+            },
+            {
+                "name": "modules",
+                "source": "/notebooks/modules",
+                "destination": "/dags/process_wwi_archive/{archive_folder}/load/modules"
+            },
+            {
+                "name": "resources",
+                "source": "/resources",
+                "destination": "/dags/process_wwi_archive/resources"
+            }
+        ],
+        "create": [
+            {
+                "destination": "/dags/process_wwi_archive/{archive_folder}/load/outputs"
+            }
+        ],
+        "replaceFiles": [
+            {
+                "source": "/dags/process_wwi_archive/{archive_folder}/load/load_wwi_{environment}.json",
+                "destination": "/dags/process_wwi_archive/{archive_folder}/load/load_wwi.json"
+            }
+        ]
+    },
+    "warehouseDirectories": {
+        "copy": [
+            {
+                "name": "archive",
+                "source": "/notebooks/warehouse",
+                "destination": "/dags/process_wwi_archive/{archive_folder}/warehouse"
+            },
+            {
+                "name": "modules",
+                "source": "/notebooks/modules",
+                "destination": "/dags/process_wwi_archive/{archive_folder}/warehouse/modules"
+            },
+            {
+                "name": "resources",
+                "source": "/resources",
+                "destination": "/dags/process_wwi_archive/resources"
+            }
+        ],
+        "create": [
+            {
+                "destination": "/dags/process_wwi_archive/{archive_folder}/warehouse/outputs"
+            }
+        ],
+        "replaceFiles": [
+            {
+                "source": "/dags/process_wwi_archive/{archive_folder}/warehouse/warehouse_wwi_{environment}.json",
+                "destination": "/dags/process_wwi_archive/{archive_folder}/warehouse/warehouse_wwi.json"
+            }
+        ]
+    },
+    "copyFilesType": {
+        "type": "github",
+        "tokenPath": "/dags/credentials/github_token.txt",
+        "owner": "ragsragsrags",
+        "repo": "WideWorldImportersELT_ApacheBeam",
+        "branch": "dev"
+    },
+    "githubLoadProcessDirectory": "",
+    "githubWarehouseProcessDirectory": "",
+    "githubReleaseTag": "",
+    "raiseErrorWhenNewVersionFound": false
+}
