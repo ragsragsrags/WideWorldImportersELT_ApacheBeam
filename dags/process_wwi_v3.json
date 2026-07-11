@@ -75,5 +75,5 @@
     "githubLoadProcessDirectory": "",
     "githubWarehouseProcessDirectory": "",
     "githubReleaseTag": "",
-    "raiseErrorWhenNewVersionFound": false
+    "raiseErrorWhenNewVersionFound": true
 }

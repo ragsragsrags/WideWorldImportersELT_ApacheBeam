@@ -137,7 +137,7 @@ def get_github_json(zip_bytes, file_path):
         with zipfile.ZipFile(zip_bytes) as z:
             # GitHub ZIPs have a top-level folder like repo-branch/
             top_level_dir = z.namelist()[0].split("/")[0]
-            target_prefix = f"{top_level_dir}/{file_path}"
+            target_prefix = f"{top_level_dir}/{file_path.strip('/')}"
 
             with z.open(target_prefix) as file:
                 content = file.read().decode('utf-8')
@@ -254,6 +254,7 @@ def get_process_wwi_files():
         copy_local_files(warehouse_directories)
     elif config["copyFilesType"]["type"] == "github":
         latest_release = get_latest_release_by_branch()
+        latest_existing_tag = latest_release["tag_name"]
         zip_bytes = download_repo_zip(
             config["copyFilesType"]["owner"], 
             config["copyFilesType"]["repo"], 
@@ -263,10 +264,17 @@ def get_process_wwi_files():
         )
 
         archive_folder = f"{copy_files_type["type"]}_{latest_release["tag_name"]}"
-        process_config = get_github_json(zip_bytes, f"/dags/process_wwi_archive/{archive_folder}/dags/process_wwi_v3.py"), 
+        latest_release_config = get_github_json(zip_bytes, f"/dags/process_wwi_v3.json"), 
         
-        copy_github_files(zip_bytes, load_directories, latest_release["tag_name"])
-        copy_github_files(zip_bytes, warehouse_directories, latest_release["tag_name"])
+        if latest_release_config["version"] > config["version"] and raise_error_when_new_version_found == True:
+            raise Exception(f"DAG version {latest_release_config["version"]} found in release is > than existing DAG version {config["version"]}.")
+        elif latest_release_config["version"] > config["version"] and raise_error_when_new_version_found == False:
+            # latest_existing_tag =
+            print("set config tag") 
+        else:
+            copy_github_files(zip_bytes, load_directories, latest_release["tag_name"])
+            copy_github_files(zip_bytes, warehouse_directories, latest_release["tag_name"])
+        
 
         # extract_folder_from_zip(zip_bytes, config["loadDirectory"], github_load_process_directory)
 
