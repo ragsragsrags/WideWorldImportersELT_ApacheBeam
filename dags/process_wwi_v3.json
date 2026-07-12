@@ -81,5 +81,6 @@
     },
     "releaseGithubTag": "",
     "raiseErrorWhenNewVersionFound": false,
-    "dagFile": "process_wwi_v3.py"
+    "dagFile": "process_wwi_v3.py",
+    "dagConfigFile": "process_wwi_v3.json"
 }
