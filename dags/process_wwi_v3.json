@@ -1,10 +1,9 @@
 {
-    "version": 2,
+    "version": 1,
     "cutoffDate": "2013-01-01 00:00:00",
-    "loadConfigEnvironment": "development",
-    "warehouseConfigEnvironment": "development",
+    "environment": "development",
     "noOfWorkers": 2,
-    "newCutoffDate": "2013-01-01 00:00:00",
+    "newCutoffDate": "",
     "loadDirectories": {
         "copy": [
             {
@@ -30,10 +29,14 @@
         ],
         "replaceFiles": [
             {
+                "name": "config",
                 "source": "/dags/process_wwi_archive/{archive_folder}/load/load_wwi_{environment}.json",
                 "destination": "/dags/process_wwi_archive/{archive_folder}/load/load_wwi.json"
             }
-        ]
+        ],
+        "archivePath": "",
+        "configPath": "",
+        "modulesPath": ""
     },
     "warehouseDirectories": {
         "copy": [
@@ -60,10 +63,14 @@
         ],
         "replaceFiles": [
             {
+                "name": "config",
                 "source": "/dags/process_wwi_archive/{archive_folder}/warehouse/warehouse_wwi_{environment}.json",
                 "destination": "/dags/process_wwi_archive/{archive_folder}/warehouse/warehouse_wwi.json"
             }
-        ]
+        ],
+        "archivePath": "",
+        "configPath": "",
+        "modulesPath": ""
     },
     "copyFilesType": {
         "type": "github",
@@ -72,8 +79,7 @@
         "repo": "WideWorldImportersELT_ApacheBeam",
         "branch": "dev"
     },
-    "githubLoadProcessDirectory": "",
-    "githubWarehouseProcessDirectory": "",
-    "githubReleaseTag": "",
-    "raiseErrorWhenNewVersionFound": true
+    "releaseGithubTag": "",
+    "raiseErrorWhenNewVersionFound": false,
+    "dagFile": "process_wwi_v3.py"
 }

@@ -26,16 +26,17 @@ warehouse_directories = config["warehouseDirectories"]
 copy_files_type = config["copyFilesType"]
 release_github_repo = ""
 release_github_branch = ""
+release_github_environment = ""
 github_token = "" 
-load_config_env = config["loadConfigEnvironment"]
-warehouse_config_env = config["warehouseConfigEnvironment"]
+environment = config["environment"]
 version = config["version"]
 raise_error_when_new_version_found = config["raiseErrorWhenNewVersionFound"]
 
 if config["copyFilesType"]["type"] == "github":
     release_github_repo = config["copyFilesType"]["repo"]
     release_github_branch = config["copyFilesType"]["branch"]
-    
+    release_github_environment = config["copyFilesType"]["branch"]
+
     with open(f"{path}{config["copyFilesType"]["tokenPath"]}", 'r', encoding='utf-8') as file:
         github_token = file.read()
 
@@ -44,8 +45,7 @@ print(f"no_of_workers: {no_of_workers}")
 print(f"current_date: {current_date}")
 print(f"load_directories: {load_directories}")
 print(f"warehouse_directories: {warehouse_directories}")
-print(f"load_config_env: {load_config_env}")
-print(f"warehouse_config_env: {warehouse_config_env}")
+print(f"environment: {environment}")
 print(f"release_github_repo: {release_github_repo}")
 print(f"release_github_branch: {release_github_branch}")
 print(f"github_token: {github_token}")
@@ -83,8 +83,8 @@ def copy_if_not_exists(source, destination):
     
     return source
 
-def copy_local_files(process_directory):
-    archive_folder = f"{copy_files_type["type"]}_{config["newCutoffDate"].replace(":", "")}"
+def copy_local_files(process_directory, archive_folder):
+    # archive_folder = f"{copy_files_type["type"]}_{config["newCutoffDate"].replace(":", "")}"
     
     for directory in process_directory["copy"]:
         shutil.copytree(
@@ -101,8 +101,8 @@ def copy_local_files(process_directory):
 
     for file in process_directory["replaceFiles"]:
         shutil.copy2(
-            f"{path}{file["source"]}".replace("{archive_folder}", archive_folder).replace("{environment}", load_config_env), 
-            f"{path}{file["destination"]}".replace("{archive_folder}", archive_folder).replace("{environment}", load_config_env)
+            f"{path}{file["source"]}".replace("{archive_folder}", archive_folder).replace("{environment}", environment), 
+            f"{path}{file["destination"]}".replace("{archive_folder}", archive_folder).replace("{environment}", environment)
         )
 
 def copy_github_file(zip_bytes, folder_path, output_dir):
@@ -146,9 +146,7 @@ def get_github_json(zip_bytes, file_path):
     except Exception as e:
         raise Exception(e)
         
-def copy_github_files(zip_bytes, process_directory, tag_name):
-    archive_folder = f"{copy_files_type["type"]}_{tag_name}"
-    
+def copy_github_files(zip_bytes, process_directory, archive_folder):
     for directory in process_directory["copy"]:
         if os.path.isdir(f"{path}{directory["destination"]}".replace("{archive_folder}", archive_folder)) == False:
             print(f"Copied {directory["source"]} to {f"{path}{directory["destination"]}".replace("{archive_folder}", archive_folder)}.")
@@ -164,8 +162,8 @@ def copy_github_files(zip_bytes, process_directory, tag_name):
 
     for file in process_directory["replaceFiles"]:
         shutil.copy2(
-            f"{path}{file["source"]}".replace("{archive_folder}", archive_folder).replace("{environment}", load_config_env), 
-            f"{path}{file["destination"]}".replace("{archive_folder}", archive_folder).replace("{environment}", load_config_env)
+            f"{path}{file["source"]}".replace("{archive_folder}", archive_folder).replace("{environment}", environment), 
+            f"{path}{file["destination"]}".replace("{archive_folder}", archive_folder).replace("{environment}", environment)
         )
 
 # def extract_folder_from_zip(zip_bytes, folder_path, output_dir):
@@ -246,80 +244,154 @@ def get_latest_release_by_branch():
     except Exception as e:
         raise Exception(e)
 
+def get_latest_directory(base_path, prefix):
+    """
+    Returns the most recently modified directory in base_path
+    that starts with the given prefix.
+    """
+    try:
+        from pathlib import Path
+
+        base = Path(base_path)
+
+        # Validate base path
+        if not base.exists() or not base.is_dir():
+            raise FileNotFoundError(f"Base path '{base_path}' does not exist or is not a directory.")
+
+        # Filter directories with the given prefix
+        matching_dirs = [
+            d for d in base.iterdir()
+            if d.is_dir() and d.name.startswith(prefix)
+        ]
+
+        if not matching_dirs:
+            raise FileNotFoundError(f"No directories found with prefix '{prefix}' in '{base_path}'.")
+
+        # Find the latest directory by modification time
+        latest_dir = max(matching_dirs, key=lambda d: d.stat().st_mtime)
+        return latest_dir
+
+    except Exception as e:
+        print(f"Error: {e}")
+
 @task 
 def get_process_wwi_files():
     print(f"copy files type: {config["copyFilesType"]}")
+    archive_folder = ""
+    
     if config["copyFilesType"]["type"] == "local":
-        copy_local_files(load_directories)
-        copy_local_files(warehouse_directories)
+        # copy from local files
+        archive_folder = f"{copy_files_type["type"]}_{config["newCutoffDate"].replace(":", "")}"
+        copy_local_files(load_directories, archive_folder)
+        copy_local_files(warehouse_directories, archive_folder)
     elif config["copyFilesType"]["type"] == "github":
+        # copy from github release
         latest_release = get_latest_release_by_branch()
-        latest_existing_tag = latest_release["tag_name"]
+        latest_tag = latest_release["tag_name"]
         zip_bytes = download_repo_zip(
             config["copyFilesType"]["owner"], 
             config["copyFilesType"]["repo"], 
             config["copyFilesType"]["branch"], 
             github_token,
-            latest_release["tag_name"]
+            latest_tag
         )
 
-        archive_folder = f"{copy_files_type["type"]}_{latest_release["tag_name"]}"
+        archive_folder = f"{copy_files_type["type"]}_{latest_tag}"
         latest_release_config = get_github_json(zip_bytes, f"/dags/process_wwi_v3.json") 
         print(f"latest_release_config: {latest_release_config}")
 
         if latest_release_config["version"] > config["version"] and raise_error_when_new_version_found == True:
             raise Exception(f"DAG version {latest_release_config["version"]} found in release is > than existing DAG version {config["version"]}.")
         elif latest_release_config["version"] > config["version"] and raise_error_when_new_version_found == False:
-            # latest_existing_tag =
-            print("set config tag") 
+            latest_directory = get_latest_directory(f"{path}/dags/process_wwi_archive", "github_")
+            latest_tag = latest_directory.name # latest_directory.split("/")[len(latest_directory.split("/")) - 1]
+            archive_folder = f"{copy_files_type["type"]}_{latest_tag}"
+            print(f"latest_tag: {latest_tag}") 
         else:
-            copy_github_files(zip_bytes, load_directories, latest_release["tag_name"])
-            copy_github_files(zip_bytes, warehouse_directories, latest_release["tag_name"])
-        
+            archive_folder = f"{copy_files_type["type"]}_{latest_tag}"
+            copy_github_files(zip_bytes, load_directories, archive_folder)
+            copy_github_files(zip_bytes, warehouse_directories, archive_folder)
 
-        # extract_folder_from_zip(zip_bytes, config["loadDirectory"], github_load_process_directory)
+    # get actual archive path
+    load_archive_path = f"{path}{next((item for item in load_directories["copy"] if item['name'] == "archive"), None)["destination"].replace("{archive_folder}", archive_folder)}"
+    warehouse_archive_path = f"{path}{next((item for item in warehouse_directories["copy"] if item['name'] == "archive"), None)["destination"].replace("{archive_folder}", archive_folder)}"
+    load_config_path = f"{path}{next((item for item in load_directories["replaceFiles"] if item['name'] == "config"), None)["destination"].replace("{archive_folder}", archive_folder)}"
+    warehouse_config_path = f"{path}{next((item for item in warehouse_directories["replaceFiles"] if item['name'] == "config"), None)["destination"].replace("{archive_folder}", archive_folder)}"
+    load_modules_path = f"{path}{next((item for item in load_directories["copy"] if item['name'] == "modules"), None)["destination"].replace("{archive_folder}", archive_folder)}"
+    warehouse_modules_path = f"{path}{next((item for item in warehouse_directories["copy"] if item['name'] == "modules"), None)["destination"].replace("{archive_folder}", archive_folder)}"
+    
+    config["loadDirectories"]["archivePath"] = load_archive_path
+    config["loadDirectories"]["configPath"] = load_config_path
+    config["loadDirectories"]["modulesPath"] = load_modules_path
+    config["warehouseDirectories"]["archivePath"] = warehouse_archive_path
+    config["warehouseDirectories"]["configPath"] = warehouse_config_path
+    config["warehouseDirectories"]["modulesPath"] = warehouse_modules_path
 
-        # if os.path.isdir(github_load_process_directory) == False:
-        
-        # github_load_process_directory = f"{path}{config["loadProcessDirectory"]}/{latest_release["tag_name"]}"
-        # github_load_process_config_file = f"{github_load_process_directory}/load_wwi_{load_config_env}.json"
-        # github_warehouse_process_directory = f"{path}{config["warehouseProcessDirectory"]}/{latest_release["tag_name"]}"
-        # github_warehouse_process_config_file = f"{github_warehouse_process_directory}/warehouse_wwi_{warehouse_config_env}.json"
+    # save to config 
+    with open(config_file, 'w', encoding='utf-8') as file:
+        json.dump(config, file, indent=4, ensure_ascii=False)    
 
-        # f = open(config_file, )
-        # config1 = json.load(f)
-        # f.close()
+def get_load_wwi(idx_process):
+    archive_path = config["loadDirectories"]["archivePath"]
 
-        # config1["githubLoadProcessDirectory"] = github_load_process_directory
-        # config1["githubWarehouseProcessDirectory"] = github_warehouse_process_directory
-        # config1["githubReleaseTag"] = latest_release["tag_name"]
-        
-        # with open(config_file, 'w', encoding='utf-8') as file:
-        #     json.dump(config1, file, indent=4, ensure_ascii=False)
-        
-        # # create load process directory
-        # if os.path.isdir(github_load_process_directory) == False:
-        #     print(f"Copying load process files to {github_load_process_directory}.")
-        #     extract_folder_from_zip(zip_bytes, config["loadDirectory"], github_load_process_directory)
-        #     os.makedirs(f"{github_load_process_directory}/modules", exist_ok=True)
-        #     os.makedirs(f"{github_load_process_directory}/outputs", exist_ok=True)
-        #     extract_folder_from_zip(zip_bytes, config["modulesDirectory"], f"{github_load_process_directory}/modules")
-        #     shutil.copy2(github_load_process_config_file, f"{github_load_process_directory}/load_wwi.json")
-        # else:
-        #     shutil.copy2(github_load_process_config_file, f"{github_load_process_directory}/load_wwi.json")
-        #     print(f"Load directory {github_load_process_directory} already exists.")
-        
-        # # create warehouse process directory
-        # if os.path.isdir(github_warehouse_process_directory) == False:
-        #     print(f"Copying warehouse process files to {github_warehouse_process_directory}.")
-        #     extract_folder_from_zip(zip_bytes, config["warehouseDirectory"], github_warehouse_process_directory)
-        #     os.makedirs(f"{github_warehouse_process_directory}/modules", exist_ok=True)
-        #     os.makedirs(f"{github_warehouse_process_directory}/outputs", exist_ok=True)
-        #     extract_folder_from_zip(zip_bytes, config["modulesDirectory"], f"{github_warehouse_process_directory}/modules")
-        #     shutil.copy2(github_warehouse_process_config_file, f"{github_warehouse_process_directory}/warehouse_wwi.json")
-        # else:
-        #     shutil.copy2(github_warehouse_process_config_file, f"{github_warehouse_process_directory}/warehouse_wwi.json")
-        #     print(f"Warehouse directory {github_warehouse_process_directory} already exists.")
+    return PapermillOperator(
+        task_id=f"load_wwi{idx_process}",
+        input_nb=f"{archive_path}/load_wwi.ipynb",
+        output_nb=f"{archive_path}/outputs/load_wwi{idx_process}_{config["newCutoffDate"]}_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
+        parameters={
+            "fromNotebook": False,
+            "configFile": config["loadDirectories"]["configPath"],
+            "newCutoffDate": config["newCutoffDate"],
+            "modules_directory": config["loadDirectories"]["modulesPath"],
+            "archivePath": archive_path,
+            "environment": environment,
+            "release_github_repo": release_github_repo,
+            "release_github_branch": release_github_branch,
+            "release_github_tag": config["releaseGithubTag"],
+            "no_of_workers": no_of_workers,
+            "process_id": idx_process
+        }
+    )
+
+def get_load_wwi_processes():
+    load_wwi = []
+
+    for idx in range(no_of_workers):
+        load_wwi.append(get_load_wwi(idx + 1))
+
+    return load_wwi
+
+def get_warehouse_wwi(idx_process, table_type):
+    archive_path = config["warehouseDirectories"]["archivePath"]
+
+    return PapermillOperator(
+        task_id=f"warehouse_wwi_{table_type}{idx_process}",
+        input_nb=f"{archive_path}/warehouse_wwi.ipynb",
+        output_nb=f"{archive_path}/outputs/warehouse_wwi{idx_process}_{config["newCutoffDate"]}_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
+        parameters={
+            "fromNotebook": False,
+            "loadConfigFile": config["loadDirectories"]["configPath"],
+            "configFile": config["warehouseDirectories"]["configPath"],
+            "newCutoffDate": config["newCutoffDate"],
+            "modules_directory": config["warehouseDirectories"]["modulesPath"],
+            "archivePath": archive_path,
+            "environment": environment,
+            "release_github_repo": release_github_repo,
+            "release_github_branch": release_github_branch,
+            "release_github_tag": config["releaseGithubTag"],
+            "no_of_workers": no_of_workers,
+            "process_id": idx_process,
+            "table_type": table_type
+        }
+    )
+
+def get_warehouse_wwi_processes(table_type):
+    warehouse_wwi = []
+
+    for idx in range(no_of_workers):
+        warehouse_wwi.append(get_warehouse_wwi(idx + 1, table_type))
+
+    return warehouse_wwi
 
 default_args = {
     "owner": "Airflow",
@@ -333,9 +405,24 @@ with DAG(
 ) as dag:
     new_cutoff_date = set_cutoff_date("set_cutoff_date", cutoff_date, config_file)
     copy_process_wwi_files = get_process_wwi_files()
+    load_wwi = get_load_wwi_processes()
+    single_task_placeholder = single_task()
+    single_task_placeholder2 = single_task() 
+    warehouse_wwi_dimension = get_warehouse_wwi_processes("dimension")
+    warehouse_wwi_fact = get_warehouse_wwi_processes("fact")
     
     (
         new_cutoff_date
         >>
         copy_process_wwi_files
+        >>
+        load_wwi
+        >>
+        single_task_placeholder
+        >>  
+        warehouse_wwi_dimension 
+        >> 
+        single_task_placeholder2  
+        >> 
+        warehouse_wwi_fact
     )

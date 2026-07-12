@@ -31,6 +31,7 @@ INSERT INTO [<< Schema >>].[<< Table >>]
     Status, 
     ProcessedDate,
     ArchivePath,
+    Environment,
     ReleaseGithubRepo,
     ReleaseGithubBranch,
     ReleaseGithubTag
@@ -41,6 +42,7 @@ VALUES
     '<< Status >>', 
     CURRENT_TIMESTAMP,
     '<< ArchivePath >>',
+    '<< Environment >>',
     '<< ReleaseGithubRepo >>',
     '<< ReleaseGithubBranch >>',
     '<< ReleaseGithubTag >>'
