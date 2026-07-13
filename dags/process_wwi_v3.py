@@ -35,8 +35,7 @@ raise_error_when_new_version_found = config["raiseErrorWhenNewVersionFound"]
 if config["copyFilesType"]["type"] == "github":
     release_github_repo = config["copyFilesType"]["repo"]
     release_github_branch = config["copyFilesType"]["branch"]
-    release_github_environment = config["copyFilesType"]["branch"]
-
+    
     with open(f"{path}{config["copyFilesType"]["tokenPath"]}", 'r', encoding='utf-8') as file:
         github_token = file.read()
 
@@ -166,31 +165,6 @@ def copy_github_files(zip_bytes, process_directory, archive_folder):
             f"{path}{file["destination"]}".replace("{archive_folder}", archive_folder).replace("{environment}", environment)
         )
 
-# def extract_folder_from_zip(zip_bytes, folder_path, output_dir):
-#     """Extract only the specified folder from the repo ZIP."""
-#     with zipfile.ZipFile(zip_bytes) as z:
-#         # GitHub ZIPs have a top-level folder like repo-branch/
-#         top_level_dir = z.namelist()[0].split("/")[0]
-#         target_prefix = f"{top_level_dir}/{folder_path.strip('/')}/"
-
-#         found = False
-#         for member in z.namelist():
-#             if member.startswith(target_prefix):
-#                 found = True
-#                 relative_path = os.path.relpath(member, target_prefix)
-#                 if relative_path == ".":
-#                     continue  # Skip the folder itself
-#                 target_path = os.path.join(output_dir, relative_path)
-#                 if member.endswith("/"):
-#                     os.makedirs(target_path, exist_ok=True)
-#                 else:
-#                     os.makedirs(os.path.dirname(target_path), exist_ok=True)
-#                     with z.open(member) as source, open(target_path, "wb") as target:
-#                         shutil.copyfileobj(source, target)
-
-#         if not found:
-#             raise Exception(f"Folder '{folder_path}' not found in ZIP.")
-
 def download_repo_zip(owner, repo, branch, token=None, tag=None):
     """Download the entire repo as a ZIP and return a BytesIO object."""
     if tag:
@@ -274,6 +248,27 @@ def get_latest_directory(base_path, prefix):
     except Exception as e:
         print(f"Error: {e}")
 
+def save_bytesio_to_file(bytes_io_obj, file_path):
+    """
+    Save a BytesIO object to a file on disk.
+
+    :param bytes_io_obj: io.BytesIO object containing binary data
+    :param file_path: Path where the file will be saved
+    """
+    try:
+        # Move cursor to the start of the BytesIO buffer
+        bytes_io_obj.seek(0)
+
+        # Open file in binary write mode and write the buffer
+        with open(file_path, 'wb') as f:
+            # Using getbuffer() avoids unnecessary copying
+            f.write(bytes_io_obj.getbuffer())
+
+        print(f"File saved successfully to: {file_path}")
+
+    except Exception as e:
+        raise Exception(e)
+
 @task 
 def get_process_wwi_files():
     print(f"copy files type: {config["copyFilesType"]}")
@@ -288,17 +283,43 @@ def get_process_wwi_files():
         # copy from github release
         latest_release = get_latest_release_by_branch()
         latest_tag = latest_release["tag_name"]
-        zip_bytes = download_repo_zip(
-            config["copyFilesType"]["owner"], 
-            config["copyFilesType"]["repo"], 
-            config["copyFilesType"]["branch"], 
-            github_token,
-            latest_tag
-        )
+        release_path = f"{path}{config["releaseGithubReleases"]}/{latest_tag}.zip"
+
+        # zip_bytes = download_repo_zip(
+        #     config["copyFilesType"]["owner"], 
+        #     config["copyFilesType"]["repo"], 
+        #     config["copyFilesType"]["branch"], 
+        #     github_token,
+        #     latest_tag
+        # )
+        
+        zip_bytes = None
+        if os.path.exists(release_path):
+            print(f"{release_path} exists in releases folder.")
+            
+            # download from releases folder
+            with open(release_path, "rb") as f:  # Read in binary mode
+                zip_bytes = f.read()
+
+            zip_bytes = io.BytesIO(zip_bytes)
+        else:
+            print(f"{release_path} does exists in releases folder.  Download from the github repo.")
+            
+            # download from github repo
+            zip_bytes = download_repo_zip(
+                config["copyFilesType"]["owner"], 
+                config["copyFilesType"]["repo"], 
+                config["copyFilesType"]["branch"],
+                github_token,
+                latest_tag
+            )
+
+            save_bytesio_to_file(zip_bytes, release_path)
 
         archive_folder = f"{copy_files_type["type"]}_{latest_tag}"
         latest_release_config = get_github_json(zip_bytes, f"/dags/process_wwi_v3.json") 
         print(f"latest_release_config: {latest_release_config}")
+        print(f"existing_config: {config}")
 
         if latest_release_config["version"] > config["version"] and raise_error_when_new_version_found == True:
             raise Exception(f"DAG version {latest_release_config["version"]} found in release is > than existing DAG version {config["version"]}.")
