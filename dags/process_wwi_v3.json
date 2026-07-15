@@ -105,12 +105,12 @@
             {
                 "name": "dag",
                 "source": "/dags/process_wwi_v3.py",
-                "destination": "/dags/process_wwi_archive/{archive_folder}/process_wwi_v3.py"
+                "destination": "/dags/process_wwi_v3.py"
             },
             {
                 "name": "config",
                 "source": "/dags/process_wwi_v3.json",
-                "destination": "/dags/process_wwi_archive/{archive_folder}/process_wwi_v3.json"
+                "destination": "/dags/process_wwi_v3.json"
             },
             {
                 "name": "dag_utilities",
