@@ -30,14 +30,22 @@ IF NOT EXISTS (
         LoadDate,
         Status, 
         ProcessedDate,
-        ArchivePath
+        ArchivePath,
+        Environment,
+        ReleaseGithubRepo,
+        ReleaseGithubBranch,
+        ReleaseGithubTag
     )
     VALUES
     (
         '<< NewCutoffDate >>', 
         '<< Status >>', 
         CAST(CURRENT_TIMESTAMP() AS DATETIME),
-        r'<< ArchivePath >>'   
+        r'<< ArchivePath >>',
+        '<< Environment >>',
+        '<< ReleaseGithubRepo >>',
+        '<< ReleaseGithubBranch >>',
+        '<< ReleaseGithubTag >>'
     );
 
 END IF;

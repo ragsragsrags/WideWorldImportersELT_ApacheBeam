@@ -1,7 +1,7 @@
 {
-    "version": 3,
-    "cutoffDate": "2014-01-01 00:00:00",
-    "environment": "development_2014-01-01",
+    "version": 1,
+    "cutoffDate": "2013-01-01 00:00:00",
+    "environment": "development",
     "noOfWorkers": 2,
     "newCutoffDate": "2014-01-01 00:00:00",
     "loadDirectories": {
@@ -34,9 +34,9 @@
                 "destination": "/dags/process_wwi_archive/{archive_folder}/load/load_wwi.json"
             }
         ],
-        "archivePath": "/opt/airflow/dags/process_wwi_archive/github_dv1.0.1/load",
-        "configPath": "/opt/airflow/dags/process_wwi_archive/github_dv1.0.1/load/load_wwi.json",
-        "modulesPath": "/opt/airflow/dags/process_wwi_archive/github_dv1.0.1/load/modules"
+        "archivePath": "/opt/airflow/dags/process_wwi_archive/local_2014-01-01 000000/load",
+        "configPath": "/opt/airflow/dags/process_wwi_archive/local_2014-01-01 000000/load/load_wwi.json",
+        "modulesPath": "/opt/airflow/dags/process_wwi_archive/local_2014-01-01 000000/load/modules"
     },
     "warehouseDirectories": {
         "copy": [
@@ -68,9 +68,28 @@
                 "destination": "/dags/process_wwi_archive/{archive_folder}/warehouse/warehouse_wwi.json"
             }
         ],
-        "archivePath": "/opt/airflow/dags/process_wwi_archive/github_dv1.0.1/warehouse",
-        "configPath": "/opt/airflow/dags/process_wwi_archive/github_dv1.0.1/warehouse/warehouse_wwi.json",
-        "modulesPath": "/opt/airflow/dags/process_wwi_archive/github_dv1.0.1/warehouse/modules"
+        "archivePath": "/opt/airflow/dags/process_wwi_archive/local_2014-01-01 000000/warehouse",
+        "configPath": "/opt/airflow/dags/process_wwi_archive/local_2014-01-01 000000/warehouse/warehouse_wwi.json",
+        "modulesPath": "/opt/airflow/dags/process_wwi_archive/local_2014-01-01 000000/warehouse/modules"
+    },
+    "common": {
+        "create": [
+            {
+                "destination": "/dags/process_wwi_archive/{archive_folder}/modules"
+            }
+        ],
+        "copyFiles": [
+            {
+                "name": "dag_utilities",
+                "source": "/dags/modules/dag_utilities.py",
+                "destination": "/dags/process_wwi_archive/{archive_folder}/modules/dag_utilities.py"
+            },
+            {
+                "name": "process_wwi_common",
+                "source": "/dags/modules/process_wwi_common.py",
+                "destination": "/dags/process_wwi_archive/{archive_folder}/modules/process_wwi_common.py"
+            }
+        ]
     },
     "copyFilesType": {
         "type": "github",
