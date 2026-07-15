@@ -100,8 +100,29 @@
     },
     "releaseGithubTag": "",
     "raiseErrorWhenNewVersionFound": false,
-    "dagFile": "process_wwi_v3.py",
-    "dagConfigFile": "process_wwi_v3.json",
-    "dagFilePath": "/dags",
+    "dagInfo": {
+        "copyFiles": [
+            {
+                "name": "dag",
+                "source": "/dags/process_wwi_v3.py",
+                "destination": "/dags/process_wwi_archive/{archive_folder}/process_wwi_v3.py"
+            },
+            {
+                "name": "config",
+                "source": "/dags/process_wwi_v3.json",
+                "destination": "/dags/process_wwi_archive/{archive_folder}/process_wwi_v3.json"
+            },
+            {
+                "name": "dag_utilities",
+                "source": "/dags/modules/dag_utilities.py",
+                "destination": "/dags/modules/dag_utilities.py"
+            },
+            {
+                "name": "process_wwi_common",
+                "source": "/dags/modules/process_wwi_common.py",
+                "destination": "/dags/modules/process_wwi_common.py"
+            }
+        ]
+    },
     "releaseGithubReleases": "/dags/process_wwi_archive/releases"
 }

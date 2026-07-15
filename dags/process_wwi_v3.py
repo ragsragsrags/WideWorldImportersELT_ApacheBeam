@@ -248,68 +248,6 @@ def get_process_wwi_files():
     with open(config_file, 'w', encoding='utf-8') as file:
         json.dump(config, file, indent=4, ensure_ascii=False)    
 
-# def get_load_wwi(idx_process):
-#     archive_path = config["loadDirectories"]["archivePath"]
-
-#     return PapermillOperator(
-#         task_id=f"load_wwi{idx_process}",
-#         input_nb=f"{archive_path}/load_wwi.ipynb",
-#         output_nb=f"{archive_path}/outputs/load_wwi{idx_process}_{config["newCutoffDate"]}_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
-#         parameters={
-#             "fromNotebook": False,
-#             "configFile": config["loadDirectories"]["configPath"],
-#             "newCutoffDate": config["newCutoffDate"],
-#             "modules_directory": config["loadDirectories"]["modulesPath"],
-#             "archivePath": archive_path,
-#             "environment": environment,
-#             "release_github_repo": release_github_repo,
-#             "release_github_branch": release_github_branch,
-#             "release_github_tag": config["releaseGithubTag"],
-#             "no_of_workers": no_of_workers,
-#             "process_id": idx_process
-#         }
-#     )
-
-# def get_load_wwi_processes():
-#     load_wwi = []
-
-#     for idx in range(no_of_workers):
-#         load_wwi.append(get_load_wwi(idx + 1))
-
-#     return load_wwi
-
-# def get_warehouse_wwi(idx_process, table_type):
-#     archive_path = config["warehouseDirectories"]["archivePath"]
-
-#     return PapermillOperator(
-#         task_id=f"warehouse_wwi_{table_type}{idx_process}",
-#         input_nb=f"{archive_path}/warehouse_wwi.ipynb",
-#         output_nb=f"{archive_path}/outputs/warehouse_wwi{idx_process}_{config["newCutoffDate"]}_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
-#         parameters={
-#             "fromNotebook": False,
-#             "loadConfigFile": config["loadDirectories"]["configPath"],
-#             "configFile": config["warehouseDirectories"]["configPath"],
-#             "newCutoffDate": config["newCutoffDate"],
-#             "modules_directory": config["warehouseDirectories"]["modulesPath"],
-#             "archivePath": archive_path,
-#             "environment": environment,
-#             "release_github_repo": release_github_repo,
-#             "release_github_branch": release_github_branch,
-#             "release_github_tag": config["releaseGithubTag"],
-#             "no_of_workers": no_of_workers,
-#             "process_id": idx_process,
-#             "table_type": table_type
-#         }
-#     )
-
-# def get_warehouse_wwi_processes(table_type):
-#     warehouse_wwi = []
-
-#     for idx in range(no_of_workers):
-#         warehouse_wwi.append(get_warehouse_wwi(idx + 1, table_type))
-
-#     return warehouse_wwi
-
 default_args = {
     "owner": "Airflow",
     "start_date": datetime(2025, 1, 1)
