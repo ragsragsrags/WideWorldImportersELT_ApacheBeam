@@ -3,7 +3,7 @@
     "cutoffDate": "2013-01-01 00:00:00",
     "environment": "development",
     "noOfWorkers": 2,
-    "newCutoffDate": "2014-01-01 00:00:00",
+    "newCutoffDate": "2013-01-01 00:00:00",
     "loadDirectories": {
         "copy": [
             {

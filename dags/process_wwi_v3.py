@@ -28,7 +28,7 @@ warehouse_directories = config["warehouseDirectories"]
 copy_files_type = config["copyFilesType"]
 release_github_repo = ""
 release_github_branch = ""
-release_github_environment = ""
+release_github_owner = ""
 github_token = "" 
 environment = config["environment"]
 version = config["version"]
@@ -37,7 +37,8 @@ raise_error_when_new_version_found = config["raiseErrorWhenNewVersionFound"]
 if config["copyFilesType"]["type"] == "github":
     release_github_repo = config["copyFilesType"]["repo"]
     release_github_branch = config["copyFilesType"]["branch"]
-    
+    release_github_owner = config["copyFilesType"]["owner"]
+
     with open(f"{path}{config["copyFilesType"]["tokenPath"]}", 'r', encoding='utf-8') as file:
         github_token = file.read()
 
@@ -178,7 +179,12 @@ def get_process_wwi_files():
         copy_common_files(config["common"], archive_folder)
     elif config["copyFilesType"]["type"] == "github":
         # copy from github release
-        latest_release = dag_util.get_latest_release_by_branch()
+        latest_release = dag_util.get_latest_release_by_branch(
+            release_github_repo, 
+            release_github_owner, 
+            release_github_branch,
+            github_token
+        )
         latest_tag = latest_release["tag_name"]
         release_path = f"{path}{config["releaseGithubReleases"]}/{latest_tag}.zip"        
         zip_bytes = None
