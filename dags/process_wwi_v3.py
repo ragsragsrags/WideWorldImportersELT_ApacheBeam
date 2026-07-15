@@ -102,7 +102,7 @@ def copy_github_common_files(zip_bytes, common, archive_folder):
     for file in common["copyFiles"]:
         dag_util.save_github_file(
             zip_bytes, 
-            f"{path}{file["source"]}",
+            file["source"],
             f"{path}{file["destination"]}".replace("{archive_folder}", archive_folder)
         )
 
