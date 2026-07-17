@@ -212,11 +212,12 @@ def get_process_wwi_files():
         if latest_release_config["version"] > config["version"] and raise_error_when_new_version_found == True:
             raise Exception(f"DAG version {latest_release_config["version"]} found in release is > than existing DAG version {config["version"]}.")
         elif latest_release_config["version"] > config["version"] and raise_error_when_new_version_found == False:
-            latest_release_info = dag_util.get_latest_release_info_by_version(f"{path}{config["releaseGithubReleasesInfoPath"]}", latest_release_config["dagVersion"])
+            latest_release_info = dag_util.get_latest_release_info_by_version(f"{path}{config["releaseGithubReleasesInfoPath"]}", config["version"])
             if latest_release_info is None:
-                raise Exception(f"Release with DAG version {latest_release_config["dagVersion"]} not found in releases info.")
+                raise Exception(f"Release with DAG version {config["version"]} not found in releases info.")
             else:
-                archive_folder = f"{copy_files_type["type"]}_{latest_release_info.TagName}"
+                latest_tag = latest_release_info["tagName"]
+                archive_folder = f"{copy_files_type["type"]}_{latest_tag}"
                 print(f"latest_tag: {latest_tag}") 
         else:
             archive_folder = f"{copy_files_type["type"]}_{latest_tag}"

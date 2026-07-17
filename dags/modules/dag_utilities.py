@@ -168,17 +168,21 @@ def save_release_info(releases_info_path, tag_name, dag_version):
         json.dump(releases_info_config, file, indent=4, ensure_ascii=False)
 
 def get_latest_release_info_by_version(releases_info_path, dag_version):
+    print(f"get_latest_release_info_by_version releases_info_path: {releases_info_path}")
+    print(f"get_latest_release_info_by_version dag_version: {dag_version}")
+
     f = open(releases_info_path,)
     releases_info_config = json.load(f)
     f.close()
 
     releases = sorted(
         list(release for release in releases_info_config["releases"] if release["dagVersion"] == dag_version), 
-        key=lambda release: release["name"],
+        key=lambda release: release["tagName"],
         reverse=True
     )
+    print(f"get_latest_release_info_by_version releases: {releases}")
 
     if len(releases) == 0:
         return None
     else:
-        releases[0]
+        return releases[0]
