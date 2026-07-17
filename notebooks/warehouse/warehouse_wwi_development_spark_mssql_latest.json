@@ -1,9 +1,10 @@
 {
+    "environment": "development",
     "initialCutoffDate": "2012-12-31 00:00:00",
-    "cutoffDate": "2013-01-01 00:00:00",
-    "gcpCredential": "../resources/credentials/bigquery_token.json",
+    "cutoffDate": "",
+    "gcpCredential": "/dags/credentials/bigquery_token.json",
     "sparkMaster": "spark://spark-master:7077",
-    "sparkJars": "/opt/airflow/resources/jars/mssql-jdbc-13.2.0.jre11.jar",
+    "sparkJars": ["/dags/process_wwi_archive/resources/jars/mssql-jdbc-13.2.0.jre11.jar"],
     "sparkExecutorMemory": "3g",
     "sparkDriverMemory": "3g",
     "sparkExecutorCores": "2",
@@ -85,7 +86,7 @@
             "schema": "dbo",
             "table": "DimCities",
             "createTable": "scripts/warehouse_wwi_mssql/create_dimension_cities.sql",
-            "upsertTable": "scripts/warehouse_wwi_mssql/upsert_dimension_cities_2013-01-01.sql",
+            "upsertTable": "scripts/warehouse_wwi_mssql/upsert_dimension_cities.sql",
             "specificColumnTypes": [
                 {
                     "name": "Location",
@@ -93,10 +94,30 @@
                     "typeCast": "CAST(? AS VARBINARY(MAX))"
                 }
             ],
-            "dropColumn": "scripts/warehouse_wwi_mssql/drop_column.sql",
-            "dropTable": "scripts/warehouse_wwi_mssql/drop_table.sql",
             "primaryKey": "CityKey",
-            "modifyTable": [],
+            "modifyTable": [
+                {
+                    "name": "Add StateProvinceCode column",
+                    "tableUpdate": "scripts/warehouse_wwi_mssql/modify_dimcities1.sql",
+                    "tableDataLoad": "scripts/warehouse_wwi_mssql/modify_dimcities_load1.sql",
+                    "tableDataUpdate": "scripts/warehouse_wwi_mssql/modify_dimcities_update1.sql",
+                    "unitTests": [
+                        {
+                            "name": "Test StateProvinceCode Not Null",
+                            "type": "column",
+                            "column": "StateProvinceCode",
+                            "subType": "notNullModify"
+                        },
+                        {
+                            "name": "Test DimCities Data",
+                            "type": "table",
+                            "column": "",
+                            "subType": "",
+                            "testScript": "scripts/warehouse_wwi_mssql/tests/test_dimension_cities_add_stateprovincecode_data.sql"
+                        }
+                    ]
+                }
+            ],
             "unitTests": [
                 {
                     "name": "Test CityKey Not Null",
@@ -169,7 +190,7 @@
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "scripts/warehouse_wwi_mssql/tests/test_dimension_cities_data_2013-01-01.sql"
+                    "testScript": "scripts/warehouse_wwi_mssql/tests/test_dimension_cities_data.sql"
                 },
                 {
                     "name": "Test DimCities Unknown Record Exists",
@@ -181,17 +202,32 @@
             ]
         },
         {
-            "rollbackVersion": 1,
+            "rollbackVersion": 2,
             "name": "DimCustomers",
             "schema": "dbo",
             "table": "DimCustomers",
-            "createTable": "scripts/warehouse_wwi_mssql/create_dimension_customers.sql",
-            "upsertTable": "scripts/warehouse_wwi_mssql/upsert_dimension_customers.sql",
+            "createTable": "scripts/warehouse_wwi_mssql/create_dimension_customers_2014-01-01.sql",
+            "upsertTable": "scripts/warehouse_wwi_mssql/upsert_dimension_customers_2014-01-01.sql",
             "specificColumnTypes": [],
             "dropColumn": "scripts/warehouse_wwi_mssql/drop_column.sql",
-            "dropTable": "scripts/warehouse_wwi_mssql/drop_table.sql",
             "primaryKey": "CustomerKey",
-            "modifyTable": [],
+            "modifyTable": [
+                {
+                    "name": "Drop IsOnCreditHold column",
+                    "tableUpdate": "scripts/warehouse_wwi_mssql/modify_dimcustomers_drop_isoncredithold.sql",
+                    "tableDataLoad": "",
+                    "tableDataUpdate": "",
+                    "unitTests": [
+                        {
+                            "name": "Test IsOnCreditHold column dropped",
+                            "type": "table",
+                            "column": "",
+                            "subType": "",
+                            "testScript": "scripts/warehouse_wwi_mssql/tests/test_modify_dimension_customers_drop_isoncredithold.sql"
+                        }
+                    ]
+                }
+            ],
             "unitTests": [
                 {
                     "name": "Test CustomerKey Not Null",
@@ -242,17 +278,11 @@
                     "subType": "notNull"
                 },
                 {
-                    "name": "Test IsOnCreditHold Not Null",
-                    "type": "column",
-                    "column": "IsOnCreditHold",
-                    "subType": "notNull"
-                },
-                {
                     "name": "Test DimCustomers Data",
                     "type": "table",
                     "column": "",
                     "subType": "",
-                    "testScript": "scripts/warehouse_wwi_mssql/tests/test_dimension_customers_data.sql"
+                    "testScript": "scripts/warehouse_wwi_mssql/tests/test_dimension_customers_data_2014-01-01.sql"
                 },
                 {
                     "name": "Test DimCustomers Unknown Record Exists",
@@ -750,6 +780,65 @@
                     "type": "column",
                     "column": "ISOWeekNumber",
                     "subType": "notNull"
+                }
+            ]
+        },
+        {
+            "rollbackVersion": 1,
+            "name": "DimCountries",
+            "schema": "dbo",
+            "table": "DimCountries",
+            "createTable": "scripts/warehouse_wwi_mssql/create_dimension_countries.sql",
+            "upsertTable": "scripts/warehouse_wwi_mssql/upsert_dimension_countries.sql",
+            "specificColumnTypes": [],
+            "dropColumn": "scripts/warehouse_wwi_mssql/drop_column.sql",
+            "dropTable": "scripts/warehouse_wwi_mssql/drop_table.sql",
+            "primaryKey": "CountryKey",
+            "modifyTable": [],
+            "unitTests": [
+                {
+                    "name": "Test CountryKey Not Null",
+                    "type": "column",
+                    "column": "CountryKey",
+                    "subType": "notNull"
+                },
+                {
+                    "name": "Test CountryKey Unique",
+                    "type": "column",
+                    "column": "CountryKey",
+                    "subType": "unique"
+                },
+                {
+                    "name": "Test WWICountryID Not Null",
+                    "type": "column",
+                    "column": "WWICountryID",
+                    "subType": "notNull"
+                },
+                {
+                    "name": "Test WWICountryID Unique",
+                    "type": "column",
+                    "column": "WWICountryID",
+                    "subType": "unique"
+                },
+                {
+                    "name": "Test Country Not Null",
+                    "type": "column",
+                    "column": "Country",
+                    "subType": "notNull"
+                },
+                {
+                    "name": "Test DimCountries Data",
+                    "type": "table",
+                    "column": "",
+                    "subType": "",
+                    "testScript": "scripts/warehouse_wwi_mssql/tests/test_dimension_countries_data.sql"
+                },
+                {
+                    "name": "Test DimCountries Unknown Record Exists",
+                    "type": "table",
+                    "column": "",
+                    "subType": "",
+                    "testScript": "scripts/warehouse_wwi_mssql/tests/test_dimension_countries_unknown_record_exists.sql"
                 }
             ]
         }
@@ -1577,6 +1666,6 @@
         }
     ],
     "test": true,
-    "testRecordCount": 1000,
+    "testRecordCount": 10,
     "loadTableExists": "scripts/load_wwi_mssql/load_table_exists.sql"
 }

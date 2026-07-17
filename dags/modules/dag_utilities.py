@@ -136,3 +136,49 @@ def save_bytesio_to_file(bytes_io_obj, file_path):
 
     except Exception as e:
         raise Exception(e)
+
+def save_release_info(releases_info_path, tag_name, dag_version):
+    releases_info_empty = {
+        "releases": []
+    }
+
+    if not os.path.exists(releases_info_path):
+        # create empty releases_info.json file
+        with open(releases_info_path, 'w', encoding='utf-8') as file:
+            json.dump(
+                releases_info_empty, 
+                file, 
+                indent=4, 
+                ensure_ascii=False
+            )
+
+    f = open(releases_info_path,)
+    releases_info_config = json.load(f)
+    f.close() 
+
+
+    releases_info_config["releases"] = releases_info_config["releases"] + [
+        {
+            "tagName": tag_name,
+            "dagVersion": dag_version
+        }
+    ]
+
+    with open(releases_info_path, 'w', encoding='utf-8') as file:
+        json.dump(releases_info_config, file, indent=4, ensure_ascii=False)
+
+def get_latest_release_info_by_version(releases_info_path, dag_version):
+    f = open(releases_info_path,)
+    releases_info_config = json.load(f)
+    f.close()
+
+    releases = sorted(
+        list(release for release in releases_info_config["releases"] if release["dagVersion"] == dag_version), 
+        key=lambda release: release["name"],
+        reverse=True
+    )
+
+    if len(releases) == 0:
+        return None
+    else:
+        releases[0]

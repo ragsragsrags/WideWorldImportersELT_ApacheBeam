@@ -1,6 +1,8 @@
 {
+    "version": 1,
     "cutoffDate": "2013-01-01 00:00:00",
     "gcpCredential": "/opt/airflow/resources/credentials/bigquery_token.json",
+    "noOfWorkers": 2,
     "sparkMaster": "local[*]",
     "sparkJars": "../resources/jars/mssql-jdbc-13.2.0.jre11.jar",
     "sparkExecutorMemory": "3g",
@@ -18,17 +20,12 @@
     "loadHistoryDate": {
         "schema": "dbo",
         "table": "LoadHistoryDate",
-        "loadLoadHistoryDateTable": "load/scripts/load_wwi_mssql/load_load_history_date_by_loaddate.sql"
+        "loadLoadHistoryDateTable": "notebooks/load/scripts/load_wwi_mssql/load_load_history_date_by_loaddate.sql"
     },
     "warehouseHistoryDate": {
         "schema": "dbo",
         "table": "WarehouseHistoryDate",
-        "loadWarehouseHistoryDateTable": "warehouse/scripts/warehouse_wwi_mssql/load_warehouse_history_date_by_loaddate.sql"
+        "loadWarehouseHistoryDateTable": "notebooks/warehouse/scripts/warehouse_wwi_mssql/load_warehouse_history_date_by_loaddate.sql"
     },
-    "processDirectory": "/notebooks",
-    "sqlUtilitiesPath": "/notebooks/modules/sql_utilities.py",
-    "kernelName": "python3",
-    "noOfLoadTablesPerProcess": 24,
-    "noOfWarehouseDimensionTablesPerProcess": 5,
-    "noOfWarehouseFactTablesPerProcess": 3
+    "kernelName": "python3"
 }

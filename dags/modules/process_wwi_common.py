@@ -1,5 +1,8 @@
 import importlib
 import json
+import os
+import modules.sql_utilities as sql_utils
+from pathlib import Path
 
 from airflow.models import DAG
 from airflow.providers.papermill.operators.papermill import PapermillOperator
@@ -28,7 +31,8 @@ def get_load_wwi(dag_config, load_history_date_data, idx_process, current_date, 
                 "release_github_branch": load_history_date_data["ReleaseGithubBranch"],
                 "release_github_tag": load_history_date_data["ReleaseGithubTag"],
                 "no_of_workers": no_of_workers,
-                "process_id": idx_process
+                "process_id": idx_process,
+                "base_path": os.getcwd()
             },
             kernel_name=kernel_name
         )
@@ -51,7 +55,8 @@ def get_load_wwi(dag_config, load_history_date_data, idx_process, current_date, 
                 "release_github_branch": dag_config["copyFilesType"]["branch"],
                 "release_github_tag": dag_config["releaseGithubTag"],
                 "no_of_workers": dag_config["noOfWorkers"],
-                "process_id": idx_process
+                "process_id": idx_process,
+                "base_path": os.getcwd()
             }
         )
 
@@ -93,8 +98,13 @@ def get_warehouse_wwi(dag_config, load_history_date_data, warehouse_history_date
                 "archivePath": warehouse_archive_path,
                 "environment": warehouse_history_date_data["Environment"],
                 "is_rollback": is_rollback,
+                "release_github_repo": warehouse_history_date_data["ReleaseGithubRepo"],
+                "release_github_branch": warehouse_history_date_data["ReleaseGithubBranch"],
+                "release_github_tag": warehouse_history_date_data["ReleaseGithubTag"],
                 "no_of_workers": no_of_workers,
-                "process_id": idx_process
+                "process_id": idx_process,
+                "table_type": table_type,
+                "base_path": os.getcwd()
             },
             kernel_name=kernel_name
         )
@@ -113,13 +123,14 @@ def get_warehouse_wwi(dag_config, load_history_date_data, warehouse_history_date
                 "modules_directory": dag_config["warehouseDirectories"]["modulesPath"],
                 "archivePath": archive_path,
                 "environment": dag_config["environment"],
-                "release_github_repo": dag_config["environment"],
+                "release_github_repo": dag_config["copyFilesType"]["repo"],
                 "release_github_branch": dag_config["copyFilesType"]["branch"],
                 "release_github_tag": dag_config["releaseGithubTag"],
                 "is_rollback": is_rollback,
                 "no_of_workers": dag_config["noOfWorkers"],
                 "process_id": idx_process,
-                "table_type": table_type
+                "table_type": table_type,
+                "base_path": os.getcwd()
             }
         )
 
@@ -134,7 +145,7 @@ def get_warehouse_wwi_processes(dag_config, load_history_date_data, warehouse_hi
                 warehouse_history_date_data, 
                 idx + 1, 
                 table_type, 
-                current_date, 
+                current_date,
                 no_of_workers,
                 is_rollback,
                 kernel_name
@@ -143,7 +154,7 @@ def get_warehouse_wwi_processes(dag_config, load_history_date_data, warehouse_hi
 
     return warehouse_wwi
 
-def create_process_wwi_rollback_dag(load_history_date_data, warehouse_history_date_data, no_of_workers, cutoff_date, current_date, kernel_name):
+def create_process_wwi_rollback_dag(load_history_date_data, warehouse_history_date_data, no_of_workers, cutoff_date, current_date, kernel_name):    
     default_args = {
         "owner": "Airflow",
         "start_date": datetime(2025, 1, 1)
@@ -154,7 +165,7 @@ def create_process_wwi_rollback_dag(load_history_date_data, warehouse_history_da
         print(f"single_task")
 
     with DAG(
-        dag_id="process_wwi_rollback_v2",
+        dag_id="process_wwi_rollback",
         default_args=default_args,
         dagrun_timeout=timedelta(minutes=60)
     ) as dag:
@@ -182,7 +193,7 @@ def create_process_wwi_rollback_dag(load_history_date_data, warehouse_history_da
             None,
             load_history_date_data, 
             warehouse_history_date_data, 
-            "fact", 
+            "fact",
             current_date, 
             no_of_workers, 
             True, 

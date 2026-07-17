@@ -1,6 +1,7 @@
 {
+    "environment": "development",
     "initialCutoffDate": "2012-12-31 00:00:00",
-    "cutoffDate": "2014-01-01 00:00:00",
+    "cutoffDate": "",
     "gcpCredential": "../resources/credentials/bigquery_token.json",
     "sparkMaster": "local[*]",
     "sparkJars": "../../resources/jars/mssql-jdbc-13.2.0.jre11.jar",

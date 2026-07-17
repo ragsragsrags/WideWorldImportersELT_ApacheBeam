@@ -1,9 +1,10 @@
 {
+    "environment": "development",
     "initialCutoffDate": "2012-12-31 00:00:00",
     "cutoffDate": "",
-    "gcpCredential": "../resources/credentials/bigquery_token.json",
-    "sparkMaster": "local[*]",
-    "sparkJars": "../../resources/jars/mssql-jdbc-13.2.0.jre11.jar",
+    "gcpCredential": "/dags/credentials/bigquery_token.json",
+    "sparkMaster": "spark://spark-master:7077",
+    "sparkJars": ["/dags/process_wwi_archive/resources/jars/mssql-jdbc-13.2.0.jre11.jar"],
     "sparkExecutorMemory": "3g",
     "sparkDriverMemory": "3g",
     "sparkExecutorCores": "2",
@@ -25,15 +26,16 @@
         ]
     },
     "source": {
-        "databaseType": "mssql",
-        "conn_spark": "jdbc:sqlserver://localhost;database=WideWorldImporters;user=sa;password=PP@$$w0rd;encrypt=false",
-        "conn": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImporters;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
+        "databaseType": "spark-mssql",
+        "database": "WideWorldImporters",
+        "conn": "jdbc:sqlserver://host.docker.internal;database=WideWorldImporters;user=sa;password=PP@$$w0rd;trustServerCertificate=true;",
+        "conn_mssql": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImporters;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
     },
     "destination": {
-        "databaseType": "mssql",
+        "databaseType": "spark-mssql",
         "database": "WideWorldImportersDW",
-        "conn_spark": "jdbc:sqlserver://localhost;database=WideWorldImportersDW;user=sa;password=PP@$$w0rd;encrypt=false",
-        "conn": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDW;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
+        "conn": "jdbc:sqlserver://host.docker.internal;database=WideWorldImportersDW;user=sa;password=PP@$$w0rd;trustServerCertificate=true;",
+        "conn_mssql": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDW;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
     },
     "loadHistory": {
         "schema": "dbo",
@@ -83,7 +85,18 @@
                 "table": "Application_Cities",
                 "stagingTable": "Application_Cities_Staging",
                 "createTable": "scripts/load_wwi_mssql/create_application_cities.sql",
-                "modifyTable": [],
+                "modifyTable": [
+                    {
+                        "name": "Add NewColumn column",
+                        "tableUpdate": "scripts/load_wwi_mssql/modify_cities1.sql",
+                        "tableCreateStaging": "scripts/load_wwi_mssql/modify_cities_staging1.sql",
+                        "tableDataLoad": "scripts/load_wwi_mssql/modify_cities_load1.sql",
+                        "tableDataUpdate": "scripts/load_wwi_mssql/modify_cities_update1.sql",
+                        "tableDataTest": "scripts/load_wwi_mssql/tests/modify_cities_load1.sql",
+                        "tableCountDataTest": "scripts/load_wwi_mssql/tests/validrange_modify_record_count.sql",
+                        "tableAssertTests": []
+                    }
+                ],
                 "insertTable": "scripts/load_wwi_mssql/insert_record.sql",
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "dropColumn": "scripts/load_wwi_mssql/drop_column.sql",
@@ -113,7 +126,18 @@
                 "table": "Application_Cities_Archive",
                 "stagingTable": "Application_Cities_Archive_Staging",
                 "createTable": "scripts/load_wwi_mssql/create_application_cities.sql",
-                "modifyTable": [],
+                "modifyTable": [
+                    {
+                        "name": "Add NewColumn column",
+                        "tableUpdate": "scripts/load_wwi_mssql/modify_cities1.sql",
+                        "tableCreateStaging": "scripts/load_wwi_mssql/modify_cities_staging1.sql",
+                        "tableDataLoad": "scripts/load_wwi_mssql/modify_cities_load1.sql",
+                        "tableDataUpdate": "scripts/load_wwi_mssql/modify_cities_archive_update1.sql",
+                        "tableDataTest": "scripts/load_wwi_mssql/tests/modify_cities_load1.sql",
+                        "tableCountDataTest": "scripts/load_wwi_mssql/tests/validrange_modify_record_count.sql",
+                        "tableAssertTests": []
+                    }
+                ],
                 "insertTable": "scripts/load_wwi_mssql/insert_record.sql",
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "dropColumn": "scripts/load_wwi_mssql/drop_column.sql",
@@ -143,7 +167,20 @@
                 "table": "Application_Countries",
                 "stagingTable": "Application_Countries_Staging",
                 "createTable": "scripts/load_wwi_mssql/create_application_countries_2014-01-01.sql",
-                "modifyTable": [],
+                "modifyTable": [
+                    {
+                        "name": "Drop LastEditedBy column",
+                        "tableUpdate": "scripts/load_wwi_mssql/modify_countries_drop_lasteditedby.sql",
+                        "tableCreateStaging": "",
+                        "tableDataLoad": "",
+                        "tableDataUpdate": "",
+                        "tableDataTest": "",
+                        "tableCountDataTest": "",
+                        "tableAssertTests": [
+                            "scripts/load_wwi_mssql/tests/modify_countries_assert_LastEditedBy_column_dropped.sql"
+                        ]
+                    }
+                ],
                 "insertTable": "scripts/load_wwi_mssql/insert_record.sql",
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "dropColumn": "scripts/load_wwi_mssql/drop_column.sql",
@@ -173,7 +210,20 @@
                 "table": "Application_Countries_Archive",
                 "stagingTable": "Application_Countries_Archive_Staging",
                 "createTable": "scripts/load_wwi_mssql/create_application_countries_2014-01-01.sql",
-                "modifyTable": [],
+                "modifyTable": [
+                    {
+                        "name": "Drop LastEditedBy column",
+                        "tableUpdate": "scripts/load_wwi_mssql/modify_countries_drop_lasteditedby.sql",
+                        "tableCreateStaging": "",
+                        "tableDataLoad": "",
+                        "tableDataUpdate": "",
+                        "tableDataTest": "",
+                        "tableCountDataTest": "",
+                        "tableAssertTests": [
+                            "scripts/load_wwi_mssql/tests/modify_countries_assert_LastEditedBy_column_dropped.sql"
+                        ]
+                    }
+                ],
                 "insertTable": "scripts/load_wwi_mssql/insert_record.sql",
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "dropColumn": "scripts/load_wwi_mssql/drop_column.sql",

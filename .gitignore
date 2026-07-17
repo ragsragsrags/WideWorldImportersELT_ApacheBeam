@@ -15,3 +15,8 @@ logs/
 test.ipynb
 plugins/process_wwi_v3_copy.json
 plugins/process_wwi_v3_copy.py
+plugins/__pycache__/
+notebooks/resources/
+credentials/
+dags/__pycache__/
+dags/modules/__pycache__/
