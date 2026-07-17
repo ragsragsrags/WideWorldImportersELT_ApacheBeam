@@ -1,9 +1,9 @@
 {
     "version": 1,
     "cutoffDate": "2013-01-01 00:00:00",
-    "environment": "development_mssql_latest",
+    "environment": "development_mssql_2013-01-01",
     "noOfWorkers": 2,
-    "newCutoffDate": "2013-01-01",
+    "newCutoffDate": "2013-01-01 00:00:00",
     "baseProcessArchive": "/dags/process_wwi_archive",
     "loadDirectories": {
         "copy": [
