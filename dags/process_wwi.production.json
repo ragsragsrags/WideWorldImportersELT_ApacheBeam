@@ -92,7 +92,7 @@
         ]
     },
     "copyFilesType": {
-        "type": "local",
+        "type": "github",
         "tokenPath": "/dags/credentials/github_token.txt",
         "owner": "ragsragsrags",
         "repo": "WideWorldImportersELT_ApacheBeam",
