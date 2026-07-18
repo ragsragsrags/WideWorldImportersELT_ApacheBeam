@@ -1,5 +1,5 @@
 {
-    "version": 1,
+    "version": 2,
     "cutoffDate": "2014-01-01 00:00:00",
     "environment": "production_mssql_2014-01-01",
     "noOfWorkers": 2,
