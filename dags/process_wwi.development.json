@@ -109,8 +109,8 @@
             },
             {
                 "name": "config",
-                "source": "/dags/process_wwi.json",
-                "destination": "/dags/process_wwi.json"
+                "source": "/dags/process_wwi.development.json",
+                "destination": "/dags/process_wwi.development.json"
             },
             {
                 "name": "dag_utilities",
