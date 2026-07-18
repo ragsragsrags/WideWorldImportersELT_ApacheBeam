@@ -1,9 +1,9 @@
 {
-    "version": 1,
-    "cutoffDate": "2013-01-01 00:00:00",
-    "environment": "development_mssql_2013-01-01",
+    "version": 2,
+    "cutoffDate": "2014-01-01 00:00:00",
+    "environment": "development_mssql_2014-01-01",
     "noOfWorkers": 2,
-    "newCutoffDate": "2013-01-01 00:00:00",
+    "newCutoffDate": "2014-01-01 00:00:00",
     "loadDirectories": {
         "copy": [
             {
@@ -34,9 +34,9 @@
                 "destination": "/dags/process_wwi_archive_dev/{archive_folder}/load/load_wwi.json"
             }
         ],
-        "archivePath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.0/load",
-        "configPath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.0/load/load_wwi.json",
-        "modulesPath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.0/load/modules"
+        "archivePath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.1/load",
+        "configPath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.1/load/load_wwi.json",
+        "modulesPath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.1/load/modules"
     },
     "warehouseDirectories": {
         "copy": [
@@ -68,9 +68,9 @@
                 "destination": "/dags/process_wwi_archive_dev/{archive_folder}/warehouse/warehouse_wwi.json"
             }
         ],
-        "archivePath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.0/warehouse",
-        "configPath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.0/warehouse/warehouse_wwi.json",
-        "modulesPath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.0/warehouse/modules"
+        "archivePath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.1/warehouse",
+        "configPath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.1/warehouse/warehouse_wwi.json",
+        "modulesPath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.1/warehouse/modules"
     },
     "common": {
         "create": [
