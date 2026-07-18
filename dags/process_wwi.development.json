@@ -34,9 +34,9 @@
                 "destination": "/dags/process_wwi_archive_dev/{archive_folder}/load/load_wwi.json"
             }
         ],
-        "archivePath": "/opt/airflow/dags/process_wwi_archive_dev/local_2013-01-01 000000/load",
-        "configPath": "/opt/airflow/dags/process_wwi_archive_dev/local_2013-01-01 000000/load/load_wwi.json",
-        "modulesPath": "/opt/airflow/dags/process_wwi_archive_dev/local_2013-01-01 000000/load/modules"
+        "archivePath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.0/load",
+        "configPath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.0/load/load_wwi.json",
+        "modulesPath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.0/load/modules"
     },
     "warehouseDirectories": {
         "copy": [
@@ -68,9 +68,9 @@
                 "destination": "/dags/process_wwi_archive_dev/{archive_folder}/warehouse/warehouse_wwi.json"
             }
         ],
-        "archivePath": "/opt/airflow/dags/process_wwi_archive_dev/local_2013-01-01 000000/warehouse",
-        "configPath": "/opt/airflow/dags/process_wwi_archive_dev/local_2013-01-01 000000/warehouse/warehouse_wwi.json",
-        "modulesPath": "/opt/airflow/dags/process_wwi_archive_dev/local_2013-01-01 000000/warehouse/modules"
+        "archivePath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.0/warehouse",
+        "configPath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.0/warehouse/warehouse_wwi.json",
+        "modulesPath": "/opt/airflow/dags/process_wwi_archive_dev/github_dv1.0.0/warehouse/modules"
     },
     "common": {
         "create": [
