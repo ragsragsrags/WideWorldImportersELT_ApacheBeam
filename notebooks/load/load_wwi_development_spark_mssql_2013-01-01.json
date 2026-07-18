@@ -33,9 +33,9 @@
     },
     "destination": {
         "databaseType": "spark-mssql",
-        "database": "WideWorldImportersDW",
-        "conn": "jdbc:sqlserver://host.docker.internal;database=WideWorldImportersDW;user=sa;password=PP@$$w0rd;trustServerCertificate=true;",
-        "conn_mssql": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDW;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
+        "database": "WideWorldImportersDWDev",
+        "conn": "jdbc:sqlserver://host.docker.internal;database=WideWorldImportersDWDev;user=sa;password=PP@$$w0rd;trustServerCertificate=true;",
+        "conn_mssql": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDWDev;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
     },
     "loadHistory": {
         "schema": "dbo",

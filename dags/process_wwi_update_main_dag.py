@@ -4,13 +4,16 @@ import json
 import io
 import os
 import modules.dag_utilities as dag_util 
+import modules.appsettings_utilities as appsettings_util
 
 from airflow.sdk import task
 from datetime import timedelta, datetime
 from airflow.models import DAG
 
 path = os.getcwd()
-config_file = f"{path}/dags/process_wwi.json"
+appsettings = appsettings_util.get_application_settings("process_wwi")
+config_file = f"{path}{appsettings["environments"][appsettings["environment"]]["configPath"]}"
+# config_file = f"{path}/dags/process_wwi.json"
 
 f = open(config_file,)
 config = json.load(f)

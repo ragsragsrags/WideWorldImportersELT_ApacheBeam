@@ -6,6 +6,8 @@ resources/credentials/
 dags/load_wwi_archive/
 dags/warehouse_wwi_archive/
 dags/process_wwi_archive/
+dags/process_wwi_archive_dev/
+dags/process_wwi_archive_prod/
 dags/resources/
 dags/credentials/
 logs/dag_id=process_wwi_rollback/

@@ -33,9 +33,9 @@
     },
     "destination": {
         "databaseType": "mssql",
-        "database": "WideWorldImportersDW",
-        "conn": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDW;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes",
-        "conn_spark": "jdbc:sqlserver://localhost;database=WideWorldImportersDW;user=sa;password=PP@$$w0rd;encrypt=false"
+        "database": "WideWorldImportersDWDev",
+        "conn": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDWDev;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes",
+        "conn_spark": "jdbc:sqlserver://localhost;database=WideWorldImportersDWDev;user=sa;password=PP@$$w0rd;encrypt=false"
     },
     "warehouseHistory": {
         "schema": "dbo",

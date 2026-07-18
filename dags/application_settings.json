@@ -1,0 +1,24 @@
+{
+    "process_wwi": {
+        "environment": "development",
+        "environments": {
+            "development": {
+                "configPath": "/dags/process_wwi.development.json"
+            },
+            "production": {
+                    "configPath": "/dags/process_wwi.production.json"
+                }
+        }
+    },
+    "process_wwi_rollback": {
+        "environment": "development",
+        "environments": {
+            "development": {
+                "configPath": "/dags/process_wwi_rollback.development.json"
+            },
+            "production": {
+                "configPath": "/dags/process_wwi_rollback.production.json"
+            }
+        }
+    }
+}

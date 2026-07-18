@@ -2,6 +2,7 @@ import os
 import json
 import importlib
 import modules.sql_utilities as sql_utils
+import modules.appsettings_utilities as appsettings_util
 
 from pathlib import Path
 from datetime import timedelta, datetime
@@ -9,7 +10,9 @@ from airflow.sdk import task
 from airflow.models import DAG
 
 path = os.getcwd()
-config_file = f"{path}/dags/process_wwi_rollback.json"
+appsettings = appsettings_util.get_application_settings("process_wwi_rollback")
+config_file = f"{path}{appsettings["environments"][appsettings["environment"]]["configPath"]}"
+# config_file = f"{path}/dags/process_wwi_rollback.json"
 
 f = open(config_file,)
 config = json.load(f)

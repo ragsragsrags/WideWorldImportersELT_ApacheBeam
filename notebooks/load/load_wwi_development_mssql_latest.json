@@ -1,5 +1,5 @@
 {
-    "environment": "development_mssql_2014-01-01",
+    "environment": "development",
     "initialCutoffDate": "2012-12-31 00:00:00",
     "cutoffDate": "",
     "gcpCredential": "../resources/credentials/bigquery_token.json",
@@ -32,9 +32,9 @@
     },
     "destination": {
         "databaseType": "mssql",
-        "database": "WideWorldImportersDW",
-        "conn_spark": "jdbc:sqlserver://localhost;database=WideWorldImportersDW;user=sa;password=PP@$$w0rd;encrypt=false",
-        "conn": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDW;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
+        "database": "WideWorldImportersDWDev",
+        "conn_spark": "jdbc:sqlserver://localhost;database=WideWorldImportersDWDev;user=sa;password=PP@$$w0rd;encrypt=false",
+        "conn": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDWDev;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
     },
     "loadHistory": {
         "schema": "dbo",

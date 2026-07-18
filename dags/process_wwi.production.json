@@ -1,0 +1,129 @@
+{
+    "version": 1,
+    "cutoffDate": "2013-01-01 00:00:00",
+    "environment": "production_mssql_2013-01-01",
+    "noOfWorkers": 2,
+    "newCutoffDate": "",
+    "loadDirectories": {
+        "copy": [
+            {
+                "name": "archive",
+                "source": "/notebooks/load",
+                "destination": "/dags/process_wwi_archive_prod/{archive_folder}/load"
+            },
+            {
+                "name": "modules",
+                "source": "/notebooks/modules",
+                "destination": "/dags/process_wwi_archive_prod/{archive_folder}/load/modules"
+            },
+            {
+                "name": "resources",
+                "source": "/resources",
+                "destination": "/dags/process_wwi_archive_prod/resources"
+            }
+        ],
+        "create": [
+            {
+                "destination": "/dags/process_wwi_archive_prod/{archive_folder}/load/outputs"
+            }
+        ],
+        "replaceFiles": [
+            {
+                "name": "config",
+                "source": "/dags/process_wwi_archive_prod/{archive_folder}/load/load_wwi_{environment}.json",
+                "destination": "/dags/process_wwi_archive_prod/{archive_folder}/load/load_wwi.json"
+            }
+        ],
+        "archivePath": "/opt/airflow/dags/process_wwi_archive_prod/local_2014-01-01 000000/load",
+        "configPath": "/opt/airflow/dags/process_wwi_archive_prod/local_2014-01-01 000000/load/load_wwi.json",
+        "modulesPath": "/opt/airflow/dags/process_wwi_archive_prod/local_2014-01-01 000000/load/modules"
+    },
+    "warehouseDirectories": {
+        "copy": [
+            {
+                "name": "archive",
+                "source": "/notebooks/warehouse",
+                "destination": "/dags/process_wwi_archive_prod/{archive_folder}/warehouse"
+            },
+            {
+                "name": "modules",
+                "source": "/notebooks/modules",
+                "destination": "/dags/process_wwi_archive_prod/{archive_folder}/warehouse/modules"
+            },
+            {
+                "name": "resources",
+                "source": "/resources",
+                "destination": "/dags/process_wwi_archive_prod/resources"
+            }
+        ],
+        "create": [
+            {
+                "destination": "/dags/process_wwi_archive_prod/{archive_folder}/warehouse/outputs"
+            }
+        ],
+        "replaceFiles": [
+            {
+                "name": "config",
+                "source": "/dags/process_wwi_archive_prod/{archive_folder}/warehouse/warehouse_wwi_{environment}.json",
+                "destination": "/dags/process_wwi_archive_prod/{archive_folder}/warehouse/warehouse_wwi.json"
+            }
+        ],
+        "archivePath": "/opt/airflow/dags/process_wwi_archive_prod/local_2014-01-01 000000/warehouse",
+        "configPath": "/opt/airflow/dags/process_wwi_archive_prod/local_2014-01-01 000000/warehouse/warehouse_wwi.json",
+        "modulesPath": "/opt/airflow/dags/process_wwi_archive_prod/local_2014-01-01 000000/warehouse/modules"
+    },
+    "common": {
+        "create": [
+            {
+                "destination": "/dags/process_wwi_archive_prod/{archive_folder}/modules"
+            }
+        ],
+        "copyFiles": [
+            {
+                "name": "dag_utilities",
+                "source": "/dags/modules/dag_utilities.py",
+                "destination": "/dags/process_wwi_archive_prod/{archive_folder}/modules/dag_utilities.py"
+            },
+            {
+                "name": "process_wwi_common",
+                "source": "/dags/modules/process_wwi_common.py",
+                "destination": "/dags/process_wwi_archive_prod/{archive_folder}/modules/process_wwi_common.py"
+            }
+        ]
+    },
+    "copyFilesType": {
+        "type": "local",
+        "tokenPath": "/dags/credentials/github_token.txt",
+        "owner": "ragsragsrags",
+        "repo": "WideWorldImportersELT_ApacheBeam",
+        "branch": "main"
+    },
+    "releaseGithubTag": "",
+    "raiseErrorWhenNewVersionFound": true,
+    "dagInfo": {
+        "copyFiles": [
+            {
+                "name": "dag",
+                "source": "/dags/process_wwi.py",
+                "destination": "/dags/process_wwi.py"
+            },
+            {
+                "name": "config",
+                "source": "/dags/process_wwi.json",
+                "destination": "/dags/process_wwi.json"
+            },
+            {
+                "name": "dag_utilities",
+                "source": "/dags/modules/dag_utilities.py",
+                "destination": "/dags/modules/dag_utilities.py"
+            },
+            {
+                "name": "process_wwi_common",
+                "source": "/dags/modules/process_wwi_common.py",
+                "destination": "/dags/modules/process_wwi_common.py"
+            }
+        ]
+    },
+    "releaseGithubReleases": "/dags/process_wwi_archive_prod/releases",
+    "releaseGithubReleasesInfoPath": "/dags/process_wwi_archive_prod/releases/releases_info.json"
+}

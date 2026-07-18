@@ -6,6 +6,7 @@ import zipfile
 import io
 import modules.process_wwi_common as process_wwi_common
 import modules.dag_utilities as dag_util
+import modules.appsettings_utilities as appsettings_util
 
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.sdk import task
@@ -14,8 +15,9 @@ from airflow.models import DAG
 from airflow.providers.papermill.operators.papermill import PapermillOperator
 
 path = os.getcwd()
-config_file = f"{path}/dags/process_wwi.json"
 
+appsettings = appsettings_util.get_application_settings("process_wwi")
+config_file = f"{path}{appsettings["environments"][appsettings["environment"]]["configPath"]}"
 f = open(config_file,)
 config = json.load(f)
 f.close()
