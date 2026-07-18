@@ -71,6 +71,7 @@ def update_main_dag_task():
                 latest_tag
             )
 
+            os.makedirs(f"{path}{config["releaseGithubReleases"]}", exist_ok=True)
             dag_util.save_bytesio_to_file(zip_bytes, release_path)
             latest_release_config = dag_util.get_github_json(zip_bytes, latest_release_config_path)
             dag_util.save_release_info(
