@@ -23,7 +23,7 @@
             "--environment_config=beam-python-workers:50000"
         ]
     },
-    "isRollback": true,
+    "isRollback": false,
     "source": {
         "databaseType": "mssql",
         "database": "WideWorldImportersDW",

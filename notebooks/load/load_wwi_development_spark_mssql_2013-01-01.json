@@ -1,9 +1,10 @@
 {
+    "environment": "development",
     "initialCutoffDate": "2012-12-31 00:00:00",
     "cutoffDate": "2013-01-01 00:00:00",
-    "gcpCredential": "../resources/credentials/bigquery_token.json",
-    "sparkMaster": "local[*]",
-    "sparkJars": ["../../resources/jars/mssql-jdbc-13.2.0.jre11.jar"],
+    "gcpCredential": "/dags/credentials/bigquery_token.json",
+    "sparkMaster": "spark://spark-master:7077",
+    "sparkJars": ["/dags/process_wwi_archive/resources/jars/mssql-jdbc-13.2.0.jre11.jar"],
     "sparkExecutorMemory": "3g",
     "sparkDriverMemory": "3g",
     "sparkExecutorCores": "2",
@@ -25,16 +26,16 @@
         ]
     },
     "source": {
-        "databaseType": "mssql",
+        "databaseType": "spark-mssql",
         "database": "WideWorldImporters",
-        "conn_spark": "jdbc:sqlserver://localhost;database=WideWorldImporters;user=sa;password=PP@$$w0rd;encrypt=false",
-        "conn": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;DATABASE=WideWorldImporters;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
+        "conn": "jdbc:sqlserver://host.docker.internal;database=WideWorldImporters;user=sa;password=PP@$$w0rd;trustServerCertificate=true;",
+        "conn_mssql": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImporters;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
     },
     "destination": {
-        "databaseType": "mssql",
-        "database": "WideWorldImportersDW",
-        "conn_spark": "jdbc:sqlserver://localhost;database=WideWorldImportersDW;user=sa;password=PP@$$w0rd;encrypt=false",
-        "conn": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;DATABASE=WideWorldImportersDW;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
+        "databaseType": "spark-mssql",
+        "database": "WideWorldImportersDWDev",
+        "conn": "jdbc:sqlserver://host.docker.internal;database=WideWorldImportersDWDev;user=sa;password=PP@$$w0rd;trustServerCertificate=true;",
+        "conn_mssql": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDWDev;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
     },
     "loadHistory": {
         "schema": "dbo",

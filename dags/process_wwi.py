@@ -1,55 +1,64 @@
 import os
 import json
 import shutil
+import requests
+import zipfile
+import io
+import modules.process_wwi_common as process_wwi_common
+import modules.dag_utilities as dag_util
+import modules.appsettings_utilities as appsettings_util
 
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.sdk import task
 from datetime import timedelta, datetime
 from airflow.models import DAG
 from airflow.providers.papermill.operators.papermill import PapermillOperator
 
 path = os.getcwd()
-config_file = f"{path}/dags/process_wwi.json"
 
+appsettings = appsettings_util.get_application_settings("process_wwi")
+config_file = f"{path}{appsettings["environments"][appsettings["environment"]]["configPath"]}"
 f = open(config_file,)
 config = json.load(f)
 f.close()
 
 cutoff_date = config["cutoffDate"]
-load_config_file = f"{path}{config["loadConfigPath"]}"
-warehouse_config_file = f"{path}{config["warehouseConfigPath"]}"
-no_of_load_tables_per_process = config["noOfLoadTablesPerProcess"]
-no_of_warehouse_dimension_tables_per_process = config["noOfWarehouseDimensionTablesPerProcess"]
-no_of_warehouse_fact_tables_per_process = config["noOfWarehouseFactTablesPerProcess"]
+no_of_workers = config["noOfWorkers"]
 current_date = datetime.strptime(datetime.now().strftime("%Y-%m-%d 00:00:00"), "%Y-%m-%d %H:%M:%S")
-load_directory = f"{path}{config["loadDirectory"]}"
-load_process_directory = f"{path}{config["loadProcessDirectory"]}/{config["newCutoffDate"].replace(":", "")}"
-warehouse_directory = f"{path}{config["warehouseDirectory"]}"
-warehouse_process_directory = f"{path}{config["warehouseProcessDirectory"]}/{config["newCutoffDate"].replace(":", "")}"
-sql_utilities_file = f"{path}{config["sqlUtilitiesPath"]}"
+load_directories = config["loadDirectories"]
+warehouse_directories = config["warehouseDirectories"]
+copy_files_type = config["copyFilesType"]
+release_github_repo = ""
+release_github_branch = ""
+release_github_owner = ""
+github_token = "" 
+environment = config["environment"]
+version = config["version"]
+raise_error_when_new_version_found = config["raiseErrorWhenNewVersionFound"]
+
+if config["copyFilesType"]["type"] == "github":
+    release_github_repo = config["copyFilesType"]["repo"]
+    release_github_branch = config["copyFilesType"]["branch"]
+    release_github_owner = config["copyFilesType"]["owner"]
+
+    with open(f"{path}{config["copyFilesType"]["tokenPath"]}", 'r', encoding='utf-8') as file:
+        github_token = file.read()
 
 print(f"cutoff_date: {cutoff_date}")
-print(f"load_config_file: {load_config_file}")
-print(f"warehouse_config_file: {warehouse_config_file}")
-print(f"no_of_load_tables_per_process: {no_of_load_tables_per_process}")
+print(f"no_of_workers: {no_of_workers}")
 print(f"current_date: {current_date}")
-print(f"load_directory: {load_directory}")
-print(f"load_process_directory: {load_process_directory}")
-print(f"warehouse_directory: {warehouse_directory}")
-print(f"warehouse_process_directory: {warehouse_process_directory}")
-print(f"sql_utilities_file: {sql_utilities_file}")
+print(f"load_directories: {load_directories}")
+print(f"warehouse_directories: {warehouse_directories}")
+print(f"environment: {environment}")
+print(f"release_github_repo: {release_github_repo}")
+print(f"release_github_branch: {release_github_branch}")
+print(f"github_token: {github_token}")
+print(f"version: {version}")
+print(f"raise_error_when_new_version_found: {raise_error_when_new_version_found}")
 
-f = open(load_config_file,)
-load_config = json.load(f)
-f.close()
-
-f = open(warehouse_config_file,)
-warehouse_config = json.load(f)
-f.close()
-
-default_args = {
-    "owner": "Airflow",
-    "start_date": datetime(2025, 1, 1)
-}
+@task
+def single_task():
+    print(f"single_task")
 
 @task
 def set_cutoff_date(name: str, cutoff_date, config_file):
@@ -58,7 +67,6 @@ def set_cutoff_date(name: str, cutoff_date, config_file):
         global current_date
         if config["cutoffDate"] == "":
             return current_date
-            # datetime.strptime(current_date.strftime("%Y-%m-%d 00:00:00"), "%Y-%m-%d %H:%M:%S")
         else:
             datetime.strptime(config["cutoffDate"], "%Y-%m-%d %H:%M:%S")
 
@@ -73,159 +81,176 @@ def set_cutoff_date(name: str, cutoff_date, config_file):
     with open(config_file, 'w', encoding='utf-8') as file:
         json.dump(config1, file, indent=4, ensure_ascii=False)
 
-@task
-def single_task():
-    print(f"single_task")
+def copy_common_files(common, archive_folder):
+    for directory in common["create"]:
+        os.makedirs(
+            f"{path}{directory["destination"]}".replace("{archive_folder}", archive_folder), 
+            exist_ok=True
+        )
 
-def get_load_wwi(idx_process, tables):
-    return PapermillOperator(
-        task_id=f"load_wwi{idx_process}",
-        input_nb=f"{load_process_directory}/load_wwi.ipynb",
-        output_nb=f"{load_process_directory}/outputs/load_wwi{idx_process}_{config["newCutoffDate"]}_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
-        parameters={
-            "fromNotebook": False,
-            "configFile": load_config_file,
-            "newCutoffDate": config["newCutoffDate"],
-            "tables": tables,
-            "sqlUtilFilePath": f"{load_process_directory}/modules/sql_utilities.py",
-            "script_directory": f"{load_process_directory}/",
-            "archivePath": load_process_directory,
-            "isInsertLoadHistoryDate": False
-        }
-    )
+    for file in common["copyFiles"]:
+        shutil.copy2(
+            f"{path}{file["source"]}", 
+            f"{path}{file["destination"]}".replace("{archive_folder}", archive_folder),
+        )
 
-def get_load_wwi_insert_load_history_date():
-    return PapermillOperator(
-        task_id=f"load_wwi_insert_load_history_date",
-        input_nb=f"{load_process_directory}/load_wwi.ipynb",
-        output_nb=f"{load_process_directory}/outputs/load_wwi_insert_load_history_date_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
-        parameters={
-            "fromNotebook": False,
-            "configFile": load_config_file,
-            "newCutoffDate": config["newCutoffDate"],
-            "tables": [],
-            "sqlUtilFilePath": f"{load_process_directory}/modules/sql_utilities.py",
-            "script_directory": f"{load_process_directory}/",
-            "archivePath": load_process_directory,
-            "isInsertLoadHistoryDate": True
-        }
-    )
+def copy_github_common_files(zip_bytes, common, archive_folder):
+    for directory in common["create"]:
+        os.makedirs(
+            f"{path}{directory["destination"]}".replace("{archive_folder}", archive_folder), 
+            exist_ok=True
+        )
 
-def get_load_wwi_processes():
-    load_wwi = []
-    idx = 0
-    tables = []
-    idx_process = 1
-    idx_table = 0
+    for file in common["copyFiles"]:
+        dag_util.save_github_file(
+            zip_bytes, 
+            file["source"],
+            f"{path}{file["destination"]}".replace("{archive_folder}", archive_folder)
+        )
 
-    if no_of_load_tables_per_process == 0:
-        print(f"tables in load_wwi{idx_process}: {load_config["tables"]}")
-        load_wwi.append(get_load_wwi(idx_process, load_config["tables"]))
-    else:
-        for table in load_config["tables"]:
-            tables.append(table)
-            idx = idx + 1
-            idx_table = idx_table + 1
+def copy_local_files(process_directory, archive_folder):
+    for directory in process_directory["copy"]:
+        shutil.copytree(
+            f"{path}{directory["source"]}", 
+            f"{path}{directory["destination"]}".replace("{archive_folder}", archive_folder), 
+            dirs_exist_ok=True
+        )
 
-            if idx == no_of_load_tables_per_process or idx_table == len(load_config["tables"]):
-                print(f"tables in load_wwi{idx_process}: {tables}")
-                load_wwi.append(get_load_wwi(idx_process, tables))
-                idx = 0
-                idx_process = idx_process + 1
-                tables = []
+    for directory in process_directory["create"]:
+        os.makedirs(
+            f"{path}{directory["destination"]}".replace("{archive_folder}", archive_folder), 
+            exist_ok=True
+        )
 
-    return load_wwi
+    for file in process_directory["replaceFiles"]:
+        shutil.copy2(
+            f"{path}{file["source"]}".replace("{archive_folder}", archive_folder).replace("{environment}", environment), 
+            f"{path}{file["destination"]}".replace("{archive_folder}", archive_folder).replace("{environment}", environment)
+        )
+        
+def copy_github_files(zip_bytes, process_directory, archive_folder):
+    for directory in process_directory["copy"]:
+        if os.path.isdir(f"{path}{directory["destination"]}".replace("{archive_folder}", archive_folder)) == False:
+            print(f"Copied {directory["source"]} to {f"{path}{directory["destination"]}".replace("{archive_folder}", archive_folder)}.")
+            dag_util.copy_github_file_from_zipbytes(
+                zip_bytes, 
+                directory["source"], 
+                f"{path}{directory["destination"]}".replace("{archive_folder}", archive_folder)
+            )
+        else:
+            print(f"{f"{path}{directory["destination"]}".replace("{archive_folder}", archive_folder)} already exists.")
 
-def get_warehouse_wwi(idx_process, tables_name, tables):
-    dimension_tables = []
-    fact_tables = []
+    for directory in process_directory["create"]:
+        os.makedirs(
+            f"{path}{directory["destination"]}".replace("{archive_folder}", archive_folder), 
+            exist_ok=True
+        )
 
-    if tables_name == "dimensionTables":
-        dimension_tables = tables
-    else:
-        fact_tables = tables
+    for file in process_directory["replaceFiles"]:
+        shutil.copy2(
+            f"{path}{file["source"]}".replace("{archive_folder}", archive_folder).replace("{environment}", environment), 
+            f"{path}{file["destination"]}".replace("{archive_folder}", archive_folder).replace("{environment}", environment)
+        )
 
-    return PapermillOperator(
-        task_id=f"warehouse_wwi_{tables_name}{idx_process}",
-        input_nb=f"{warehouse_process_directory}/warehouse_wwi.ipynb",
-        output_nb=f"{warehouse_process_directory}/outputs/warehouse_wwi{idx_process}_{config["newCutoffDate"]}_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
-        parameters={
-            "fromNotebook": False,
-            "loadConfigFile": load_config_file,
-            "configFile": warehouse_config_file,
-            "newCutoffDate": config["newCutoffDate"],
-            "dimension_tables": dimension_tables,
-            "fact_tables": fact_tables,
-            "sqlUtilFilePath": f"{warehouse_process_directory}/modules/sql_utilities.py",
-            "archivePath": warehouse_process_directory,
-            "script_directory": ""f"{warehouse_process_directory}/",
-            "isInsertWarehouseHistoryDate": False
-        }
-    )
+@task 
+def get_process_wwi_files():
+    print(f"copy files type: {config["copyFilesType"]}")
+    archive_folder = ""
+    
+    if config["copyFilesType"]["type"] == "local":
+        # copy from local files
+        archive_folder = f"{copy_files_type["type"]}_{config["newCutoffDate"].replace(":", "")}"
+        copy_local_files(load_directories, archive_folder)
+        copy_local_files(warehouse_directories, archive_folder)
+        copy_common_files(config["common"], archive_folder)
+    elif config["copyFilesType"]["type"] == "github":
+        # copy from github release
+        latest_release = dag_util.get_latest_release_by_branch(
+            release_github_repo, 
+            release_github_owner, 
+            release_github_branch,
+            github_token
+        )
+        latest_tag = latest_release["tag_name"]
+        release_path = f"{path}{config["releaseGithubReleases"]}/{latest_tag}.zip"        
+        zip_bytes = None
+        latest_release_config_path = f"{next((item for item in config["dagInfo"]["copyFiles"] if item['name'] == "config"), None)["source"]}"
+        latest_release_config = {}
 
-def get_warehouse_wwi_insert_warehouse_history_date():
-    return PapermillOperator(
-        task_id=f"warehouse_wwi_insert_warehouse_history_date",
-        input_nb=f"{warehouse_process_directory}/warehouse_wwi.ipynb",
-        output_nb=f"{warehouse_process_directory}/outputs/warehouse_wwi_insert_warehouse_history_date_{current_date.strftime("%Y-%m-%d %H:%M:%S")}_output.ipynb",
-        parameters={
-            "fromNotebook": False,
-            "loadConfigFile": load_config_file,
-            "configFile": warehouse_config_file,
-            "newCutoffDate": config["newCutoffDate"],
-            "dimension_tables": [],
-            "fact_tables": [],
-            "sqlUtilFilePath": f"{warehouse_process_directory}/modules/sql_utilities.py",
-            "archivePath": warehouse_process_directory,
-            "script_directory": ""f"{warehouse_process_directory}/",
-            "isInsertWarehouseHistoryDate": True
-        }
-    )
+        if os.path.exists(release_path):
+            print(f"{release_path} exists in releases folder.")
+            
+            # download from releases folder
+            with open(release_path, "rb") as f:  # Read in binary mode
+                zip_bytes = f.read()
 
-def get_warehouse_wwi_processes(tables_name, no_tables_per_process):
-    warehouse_wwi = []
-    idx = 0
-    tables = []
-    idx_process = 1
-    idx_table = 0
+            zip_bytes = io.BytesIO(zip_bytes)
+            latest_release_config = dag_util.get_github_json(zip_bytes, latest_release_config_path)
+        else:
+            print(f"{release_path} does exists in releases folder.  Download from the github repo.")
+            
+            # download from github repo
+            zip_bytes = dag_util.download_repo_zip(
+                config["copyFilesType"]["repo"],
+                config["copyFilesType"]["owner"],                  
+                config["copyFilesType"]["branch"],
+                github_token,
+                latest_tag
+            )
 
-    if no_tables_per_process == 0:
-        print(f"tables in warehouse_wwi_{tables_name}{idx_process}: {warehouse_config[tables_name]}")
-        warehouse_wwi.append(get_warehouse_wwi(idx_process, tables_name, warehouse_config[tables_name]))
-    else:
-        for table in warehouse_config[tables_name]:
-            tables.append(table)
-            idx = idx + 1
-            idx_table = idx_table + 1
+            os.makedirs(f"{path}{config["releaseGithubReleases"]}", exist_ok=True)
+            dag_util.save_bytesio_to_file(zip_bytes, release_path)
+            latest_release_config = dag_util.get_github_json(zip_bytes, latest_release_config_path)
+            dag_util.save_release_info(
+                f"{path}{config["releaseGithubReleasesInfoPath"]}", 
+                latest_tag, 
+                latest_release_config["version"]
+            )
 
-            if idx == no_tables_per_process or idx_table == len(warehouse_config[tables_name]):
-                print(f"tables in warehouse_wwi_{tables_name}{idx_process}: {tables}")
-                warehouse_wwi.append(get_warehouse_wwi(idx_process, tables_name, tables))
-                idx = 0
-                idx_process = idx_process + 1
-                tables = []
+        archive_folder = f"{copy_files_type["type"]}_{latest_tag}"
+        # latest_release_config = get_github_json(zip_bytes, f"/dags/process_wwi.json") 
+        print(f"latest_release_config: {latest_release_config}")
+        print(f"existing_config: {config}")
 
-    return warehouse_wwi
+        if latest_release_config["version"] > config["version"] and raise_error_when_new_version_found == True:
+            raise Exception(f"DAG version {latest_release_config["version"]} found in release is > than existing DAG version {config["version"]}.")
+        elif latest_release_config["version"] > config["version"] and raise_error_when_new_version_found == False:
+            latest_release_info = dag_util.get_latest_release_info_by_version(f"{path}{config["releaseGithubReleasesInfoPath"]}", config["version"])
+            if latest_release_info is None:
+                raise Exception(f"Release with DAG version {config["version"]} not found in releases info.")
+            else:
+                latest_tag = latest_release_info["tagName"]
+                archive_folder = f"{copy_files_type["type"]}_{latest_tag}"
+                print(f"latest_tag: {latest_tag}") 
+        else:
+            archive_folder = f"{copy_files_type["type"]}_{latest_tag}"
+            copy_github_files(zip_bytes, load_directories, archive_folder)
+            copy_github_files(zip_bytes, warehouse_directories, archive_folder)
+            copy_github_common_files(zip_bytes, config["common"], archive_folder)
 
-@task
-def get_load_wwi_copy_files():
-    if not os.path.isdir(load_directory):
-        raise NotADirectoryError(f"Source directory '{load_directory}' does not exist or is not a directory.")
-    shutil.copytree(load_directory, load_process_directory, dirs_exist_ok=True)
-    shutil.copy2(load_config_file, f"{load_process_directory}/load_wwi.json")
-    os.makedirs(f"{load_process_directory}/modules", exist_ok=True)
-    os.makedirs(f"{load_process_directory}/outputs", exist_ok=True)
-    shutil.copy2(sql_utilities_file, f"{load_process_directory}/modules/sql_utilities.py")
+    # get actual archive path
+    load_archive_path = f"{path}{next((item for item in load_directories["copy"] if item['name'] == "archive"), None)["destination"].replace("{archive_folder}", archive_folder)}"
+    warehouse_archive_path = f"{path}{next((item for item in warehouse_directories["copy"] if item['name'] == "archive"), None)["destination"].replace("{archive_folder}", archive_folder)}"
+    load_config_path = f"{path}{next((item for item in load_directories["replaceFiles"] if item['name'] == "config"), None)["destination"].replace("{archive_folder}", archive_folder)}"
+    warehouse_config_path = f"{path}{next((item for item in warehouse_directories["replaceFiles"] if item['name'] == "config"), None)["destination"].replace("{archive_folder}", archive_folder)}"
+    load_modules_path = f"{path}{next((item for item in load_directories["copy"] if item['name'] == "modules"), None)["destination"].replace("{archive_folder}", archive_folder)}"
+    warehouse_modules_path = f"{path}{next((item for item in warehouse_directories["copy"] if item['name'] == "modules"), None)["destination"].replace("{archive_folder}", archive_folder)}"
+    
+    config["loadDirectories"]["archivePath"] = load_archive_path
+    config["loadDirectories"]["configPath"] = load_config_path
+    config["loadDirectories"]["modulesPath"] = load_modules_path
+    config["warehouseDirectories"]["archivePath"] = warehouse_archive_path
+    config["warehouseDirectories"]["configPath"] = warehouse_config_path
+    config["warehouseDirectories"]["modulesPath"] = warehouse_modules_path
 
-@task
-def get_warehouse_wwi_copy_files():
-    if not os.path.isdir(warehouse_directory):
-        raise NotADirectoryError(f"Source directory '{warehouse_directory}' does not exist or is not a directory.")
-    shutil.copytree(warehouse_directory, warehouse_process_directory, dirs_exist_ok=True)
-    shutil.copy2(warehouse_config_file, f"{warehouse_process_directory}/warehouse_wwi.json")
-    os.makedirs(f"{warehouse_process_directory}/modules", exist_ok=True)
-    os.makedirs(f"{warehouse_process_directory}/outputs", exist_ok=True)
-    shutil.copy2(sql_utilities_file, f"{warehouse_process_directory}/modules/sql_utilities.py")
+    # save to config 
+    with open(config_file, 'w', encoding='utf-8') as file:
+        json.dump(config, file, indent=4, ensure_ascii=False)    
+
+default_args = {
+    "owner": "Airflow",
+    "start_date": datetime(2025, 1, 1)
+}
 
 with DAG(
     dag_id="process_wwi",
@@ -233,26 +258,47 @@ with DAG(
     dagrun_timeout=timedelta(minutes=60)
 ) as dag:
     new_cutoff_date = set_cutoff_date("set_cutoff_date", cutoff_date, config_file)
-    copy_load_files = get_load_wwi_copy_files()
-    single_task_placeholder = single_task() 
-    load_wwi = get_load_wwi_processes()
-    copy_warehouse_files = get_warehouse_wwi_copy_files()
-    warehouse_wwi_dimension = get_warehouse_wwi_processes("dimensionTables", no_of_warehouse_dimension_tables_per_process)
-    warehouse_wwi_fact = get_warehouse_wwi_processes("factTables", no_of_warehouse_fact_tables_per_process)
+    copy_process_wwi_files = get_process_wwi_files()
+    load_wwi = process_wwi_common.get_load_wwi_processes(
+        config, 
+        None, 
+        current_date, 
+        no_of_workers, 
+        False
+    )
+    single_task_placeholder = single_task()
+    single_task_placeholder2 = single_task() 
+    warehouse_wwi_dimension = process_wwi_common.get_warehouse_wwi_processes(
+        config, 
+        None, 
+        None, 
+        "dimension", 
+        current_date, 
+        no_of_workers, 
+        False
+    )
+    warehouse_wwi_fact = process_wwi_common.get_warehouse_wwi_processes(
+        config, 
+        None, 
+        None, 
+        "fact", 
+        current_date, 
+        no_of_workers, 
+        False
+    )
     
     (
-        new_cutoff_date 
+        new_cutoff_date
         >>
-        copy_load_files
-        >> 
-        load_wwi 
+        copy_process_wwi_files
         >>
-        copy_warehouse_files
+        load_wwi
+        >>
+        single_task_placeholder
         >>  
         warehouse_wwi_dimension 
         >> 
-        single_task_placeholder  
+        single_task_placeholder2  
         >> 
         warehouse_wwi_fact
     )
-    

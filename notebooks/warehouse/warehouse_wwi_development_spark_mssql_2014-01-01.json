@@ -1,9 +1,10 @@
 {
+    "environment": "development",
     "initialCutoffDate": "2012-12-31 00:00:00",
-    "cutoffDate": "",
-    "gcpCredential": "../resources/credentials/bigquery_token.json",
-    "sparkMaster": "local[*]",
-    "sparkJars": "../../resources/jars/mssql-jdbc-13.2.0.jre11.jar",
+    "cutoffDate": "2014-01-01 00:00:00",
+    "gcpCredential": "/dags/credentials/bigquery_token.json",
+    "sparkMaster": "spark://spark-master:7077",
+    "sparkJars": ["/dags/process_wwi_archive/resources/jars/mssql-jdbc-13.2.0.jre11.jar"],
     "sparkExecutorMemory": "3g",
     "sparkDriverMemory": "3g",
     "sparkExecutorCores": "2",
@@ -25,16 +26,16 @@
     },
     "isRollback": false,
     "source": {
-        "databaseType": "mssql",
+        "databaseType": "spark-mssql",
         "database": "WideWorldImportersDW",
-        "conn": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDW;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes",
-        "conn_spark": "jdbc:sqlserver://localhost;database=WideWorldImportersDW;user=sa;password=PP@$$w0rd;encrypt=false"
+        "conn_mssql": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDW;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes",
+        "conn": "jdbc:sqlserver://host.docker.internal;database=WideWorldImportersDW;user=sa;password=PP@$$w0rd;trustServerCertificate=true;"
     },
     "destination": {
-        "databaseType": "mssql",
-        "database": "WideWorldImportersDW",
-        "conn": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDW;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes",
-        "conn_spark": "jdbc:sqlserver://localhost;database=WideWorldImportersDW;user=sa;password=PP@$$w0rd;encrypt=false"
+        "databaseType": "spark-mssql",
+        "database": "WideWorldImportersDWDev",
+        "conn_mssql": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDWDev;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes",
+        "conn": "jdbc:sqlserver://host.docker.internal;database=WideWorldImportersDWDev;user=sa;password=PP@$$w0rd;trustServerCertificate=true;"
     },
     "warehouseHistory": {
         "schema": "dbo",
@@ -94,7 +95,29 @@
                 }
             ],
             "primaryKey": "CityKey",
-            "modifyTable": [],
+            "modifyTable": [
+                {
+                    "name": "Add StateProvinceCode column",
+                    "tableUpdate": "scripts/warehouse_wwi_mssql/modify_dimcities1.sql",
+                    "tableDataLoad": "scripts/warehouse_wwi_mssql/modify_dimcities_load1.sql",
+                    "tableDataUpdate": "scripts/warehouse_wwi_mssql/modify_dimcities_update1.sql",
+                    "unitTests": [
+                        {
+                            "name": "Test StateProvinceCode Not Null",
+                            "type": "column",
+                            "column": "StateProvinceCode",
+                            "subType": "notNullModify"
+                        },
+                        {
+                            "name": "Test DimCities Data",
+                            "type": "table",
+                            "column": "",
+                            "subType": "",
+                            "testScript": "scripts/warehouse_wwi_mssql/tests/test_dimension_cities_add_stateprovincecode_data.sql"
+                        }
+                    ]
+                }
+            ],
             "unitTests": [
                 {
                     "name": "Test CityKey Not Null",
@@ -188,7 +211,23 @@
             "specificColumnTypes": [],
             "dropColumn": "scripts/warehouse_wwi_mssql/drop_column.sql",
             "primaryKey": "CustomerKey",
-            "modifyTable": [],
+            "modifyTable": [
+                {
+                    "name": "Drop IsOnCreditHold column",
+                    "tableUpdate": "scripts/warehouse_wwi_mssql/modify_dimcustomers_drop_isoncredithold.sql",
+                    "tableDataLoad": "",
+                    "tableDataUpdate": "",
+                    "unitTests": [
+                        {
+                            "name": "Test IsOnCreditHold column dropped",
+                            "type": "table",
+                            "column": "",
+                            "subType": "",
+                            "testScript": "scripts/warehouse_wwi_mssql/tests/test_modify_dimension_customers_drop_isoncredithold.sql"
+                        }
+                    ]
+                }
+            ],
             "unitTests": [
                 {
                     "name": "Test CustomerKey Not Null",

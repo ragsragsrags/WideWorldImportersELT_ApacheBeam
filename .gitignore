@@ -2,4 +2,23 @@
 # these are the default directory names, adjust/add to fit your needs
 .venv/
 .vscode/
-resources/credentials/bigquery_token.json
+resources/credentials/
+dags/load_wwi_archive/
+dags/warehouse_wwi_archive/
+dags/process_wwi_archive/
+dags/process_wwi_archive_dev/
+dags/process_wwi_archive_prod/
+dags/resources/
+dags/credentials/
+logs/dag_id=process_wwi_rollback/
+logs/dag_id=process_wwi_v2/
+logs/dag_processor/
+logs/
+test.ipynb
+plugins/process_wwi_v3_copy.json
+plugins/process_wwi_v3_copy.py
+plugins/__pycache__/
+notebooks/resources/
+credentials/
+dags/__pycache__/
+dags/modules/__pycache__/

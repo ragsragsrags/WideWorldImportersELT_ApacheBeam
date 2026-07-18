@@ -1,16 +1,17 @@
 {
+    "environment": "development",
     "initialCutoffDate": "2012-12-31 00:00:00",
-    "cutoffDate": "2013-01-01 00:00:00",
-    "gcpCredential": "../resources/credentials/bigquery_token.json",
+    "cutoffDate": "2014-01-01 00:00:00",
+    "gcpCredential": "/dags/credentials/bigquery_token.json",
     "sparkMaster": "spark://spark-master:7077",
-    "sparkJars": "/opt/airflow/resources/jars/mssql-jdbc-13.2.0.jre11.jar,/opt/airflow/resources/jars/spark-bigquery-with-dependencies_2.12-0.42.2.jar",
+    "sparkJars": ["/dags/process_wwi_archive/resources/jars/mssql-jdbc-13.2.0.jre11.jar"],
     "sparkExecutorMemory": "3g",
     "sparkDriverMemory": "3g",
     "sparkExecutorCores": "2",
     "sparkCoresMax": "2",
     "sparkNetworkTimeout": "600s",
     "sparkExecutorHeartBeatInterval": "599s",
-    "isRollback": false, 
+    "isRollback": false,
     "runner": "DirectRunner",
     "runnerOptions": {
         "DirectRunner": [
@@ -32,9 +33,9 @@
     },
     "destination": {
         "databaseType": "spark-mssql",
-        "database": "WideWorldImportersDW",
-        "conn": "jdbc:sqlserver://host.docker.internal;database=WideWorldImportersDW;user=sa;password=PP@$$w0rd;trustServerCertificate=true;",
-        "conn_mssql": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDW;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
+        "database": "WideWorldImportersDWDev",
+        "conn": "jdbc:sqlserver://host.docker.internal;database=WideWorldImportersDWDev;user=sa;password=PP@$$w0rd;trustServerCertificate=true;",
+        "conn_mssql": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDWDev;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes"
     },
     "loadHistory": {
         "schema": "dbo",
@@ -42,6 +43,7 @@
         "createLoadHistoryTable": "scripts/load_wwi_mssql/create_load_history.sql",
         "insertLoadHistoryTable": "scripts/load_wwi_mssql/insert_load_history.sql",
         "loadLastCutoffDateLoadHistoryTable": "scripts/load_wwi_mssql/load_last_cutoff_date_load_history.sql",
+        "loadLastCutoffDatesButCutoffDate": "scripts/load_wwi_mssql/load_last_cutoff_dates.sql",
         "loadLastCutoffDatesTable": "scripts/load_wwi_mssql/load_last_cutoff_dates.sql",
         "loadLoadHistoriesForRollback": "scripts/load_wwi_mssql/load_load_histories_for_rollback.sql",
         "updateLoadHistoryLastRolledBackProcessedDateTable": "scripts/load_wwi_mssql/update_load_history_last_rolled_back_processed_date.sql"
@@ -51,8 +53,7 @@
         "table": "LoadHistoryDate",
         "createLoadHistoryDateTable": "scripts/load_wwi_mssql/create_load_history_date.sql",
         "insertLoadHistoryDateTable": "scripts/load_wwi_mssql/insert_load_history_date.sql",
-        "loadLoadHistoryDateTable": "scripts/load_wwi_mssql/load_load_history_date_by_loaddate.sql",
-        "deleteLoadHistoryDatesForRollback": "scripts/load_wwi_mssql/delete_load_history_dates_for_rollback.sql"
+        "loadLoadHistoryDateTable": "scripts/load_wwi_mssql/load_load_history_date_by_loaddate.sql"
     },
     "modifyLoadHistory": {
         "schema": "dbo",
@@ -61,7 +62,7 @@
         "insertModifyLoadHistoryTable": "scripts/load_wwi_mssql/insert_modify_load_history.sql",
         "loadUnprocessedModifyLoadHistoryTable": "scripts/load_wwi_mssql/load_unprocessed_modify_load_history.sql",
         "loadUnprocessedModifyLoadHistoryScriptTable": "scripts/load_wwi_mssql/load_unprocessed_modify_load_history_script.sql"
-    }, 
+    },
     "rollBack": {
         "rollbackDropRecordsTable": "scripts/load_wwi_mssql/rollback_drop_records.sql",
         "rollbackDropRecordsFinalTable": "scripts/load_wwi_mssql/rollback_drop_records_final.sql",
@@ -75,7 +76,7 @@
             "source": {
                 "schema": "Application",
                 "table": "Cities",
-                "loadTable": "scripts/load_wwi_mssql/load_application_cities_2013-01-01.sql",
+                "loadTable": "scripts/load_wwi_mssql/load_application_cities.sql",
                 "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
                 "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
@@ -83,8 +84,19 @@
                 "schema": "dbo",
                 "table": "Application_Cities",
                 "stagingTable": "Application_Cities_Staging",
-                "createTable": "scripts/load_wwi_mssql/create_application_cities_2013-01-01.sql",
-                "modifyTable": [],
+                "createTable": "scripts/load_wwi_mssql/create_application_cities.sql",
+                "modifyTable": [
+                    {
+                        "name": "Add NewColumn column",
+                        "tableUpdate": "scripts/load_wwi_mssql/modify_cities1.sql",
+                        "tableCreateStaging": "scripts/load_wwi_mssql/modify_cities_staging1.sql",
+                        "tableDataLoad": "scripts/load_wwi_mssql/modify_cities_load1.sql",
+                        "tableDataUpdate": "scripts/load_wwi_mssql/modify_cities_update1.sql",
+                        "tableDataTest": "scripts/load_wwi_mssql/tests/modify_cities_load1.sql",
+                        "tableCountDataTest": "scripts/load_wwi_mssql/tests/validrange_modify_record_count.sql",
+                        "tableAssertTests": []
+                    }
+                ],
                 "insertTable": "scripts/load_wwi_mssql/insert_record.sql",
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "dropColumn": "scripts/load_wwi_mssql/drop_column.sql",
@@ -96,7 +108,7 @@
                         "typeCast": "CAST(? AS VARBINARY(MAX))"
                     }
                 ],
-                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_cities_2013-01-01.sql",
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_cities.sql",
                 "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
@@ -105,7 +117,7 @@
             "source": {
                 "schema": "Application",
                 "table": "Cities_Archive",
-                "loadTable": "scripts/load_wwi_mssql/load_application_cities_2013-01-01.sql",
+                "loadTable": "scripts/load_wwi_mssql/load_application_cities.sql",
                 "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
                 "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
@@ -113,8 +125,19 @@
                 "schema": "dbo",
                 "table": "Application_Cities_Archive",
                 "stagingTable": "Application_Cities_Archive_Staging",
-                "createTable": "scripts/load_wwi_mssql/create_application_cities_2013-01-01.sql",
-                "modifyTable": [],
+                "createTable": "scripts/load_wwi_mssql/create_application_cities.sql",
+                "modifyTable": [
+                    {
+                        "name": "Add NewColumn column",
+                        "tableUpdate": "scripts/load_wwi_mssql/modify_cities1.sql",
+                        "tableCreateStaging": "scripts/load_wwi_mssql/modify_cities_staging1.sql",
+                        "tableDataLoad": "scripts/load_wwi_mssql/modify_cities_load1.sql",
+                        "tableDataUpdate": "scripts/load_wwi_mssql/modify_cities_archive_update1.sql",
+                        "tableDataTest": "scripts/load_wwi_mssql/tests/modify_cities_load1.sql",
+                        "tableCountDataTest": "scripts/load_wwi_mssql/tests/validrange_modify_record_count.sql",
+                        "tableAssertTests": []
+                    }
+                ],
                 "insertTable": "scripts/load_wwi_mssql/insert_record.sql",
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "dropColumn": "scripts/load_wwi_mssql/drop_column.sql",
@@ -126,7 +149,7 @@
                         "typeCast": "CAST(? AS VARBINARY(MAX))"
                     }
                 ],
-                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_cities_2013-01-01.sql",
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_cities.sql",
                 "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
@@ -135,7 +158,7 @@
             "source": {
                 "schema": "Application",
                 "table": "Countries",
-                "loadTable": "scripts/load_wwi_mssql/load_application_countries.sql",
+                "loadTable": "scripts/load_wwi_mssql/load_application_countries_2014-01-01.sql",
                 "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
                 "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
@@ -143,8 +166,21 @@
                 "schema": "dbo",
                 "table": "Application_Countries",
                 "stagingTable": "Application_Countries_Staging",
-                "createTable": "scripts/load_wwi_mssql/create_application_countries.sql",
-                "modifyTable": [],
+                "createTable": "scripts/load_wwi_mssql/create_application_countries_2014-01-01.sql",
+                "modifyTable": [
+                    {
+                        "name": "Drop LastEditedBy column",
+                        "tableUpdate": "scripts/load_wwi_mssql/modify_countries_drop_lasteditedby.sql",
+                        "tableCreateStaging": "",
+                        "tableDataLoad": "",
+                        "tableDataUpdate": "",
+                        "tableDataTest": "",
+                        "tableCountDataTest": "",
+                        "tableAssertTests": [
+                            "scripts/load_wwi_mssql/tests/modify_countries_assert_LastEditedBy_column_dropped.sql"
+                        ]
+                    }
+                ],
                 "insertTable": "scripts/load_wwi_mssql/insert_record.sql",
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "dropColumn": "scripts/load_wwi_mssql/drop_column.sql",
@@ -156,7 +192,7 @@
                         "typeCast": "CAST(? AS VARBINARY(MAX))"
                     }
                 ],
-                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_countries.sql",
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_countries_2014-01-01.sql",
                 "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
@@ -165,7 +201,7 @@
             "source": {
                 "schema": "Application",
                 "table": "Countries_Archive",
-                "loadTable": "scripts/load_wwi_mssql/load_application_countries.sql",
+                "loadTable": "scripts/load_wwi_mssql/load_application_countries_2014-01-01.sql",
                 "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
                 "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
@@ -173,8 +209,21 @@
                 "schema": "dbo",
                 "table": "Application_Countries_Archive",
                 "stagingTable": "Application_Countries_Archive_Staging",
-                "createTable": "scripts/load_wwi_mssql/create_application_countries.sql",
-                "modifyTable": [],
+                "createTable": "scripts/load_wwi_mssql/create_application_countries_2014-01-01.sql",
+                "modifyTable": [
+                    {
+                        "name": "Drop LastEditedBy column",
+                        "tableUpdate": "scripts/load_wwi_mssql/modify_countries_drop_lasteditedby.sql",
+                        "tableCreateStaging": "",
+                        "tableDataLoad": "",
+                        "tableDataUpdate": "",
+                        "tableDataTest": "",
+                        "tableCountDataTest": "",
+                        "tableAssertTests": [
+                            "scripts/load_wwi_mssql/tests/modify_countries_assert_LastEditedBy_column_dropped.sql"
+                        ]
+                    }
+                ],
                 "insertTable": "scripts/load_wwi_mssql/insert_record.sql",
                 "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
                 "dropColumn": "scripts/load_wwi_mssql/drop_column.sql",
@@ -186,7 +235,7 @@
                         "typeCast": "CAST(? AS VARBINARY(MAX))"
                     }
                 ],
-                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_countries.sql",
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_application_countries_2014-01-01.sql",
                 "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             }
         },
@@ -437,7 +486,7 @@
                 "table": "PurchaseOrderLines",
                 "loadTable": "scripts/load_wwi_mssql/load_purchasing_purchaseorderlines.sql",
                 "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
-                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "dbo",
@@ -461,7 +510,7 @@
                 "table": "PurchaseOrders",
                 "loadTable": "scripts/load_wwi_mssql/load_purchasing_purchaseorders.sql",
                 "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
-                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "dbo",
@@ -593,7 +642,7 @@
                 "table": "SupplierTransactions",
                 "loadTable": "scripts/load_wwi_mssql/load_purchasing_suppliertransactions.sql",
                 "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
-                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "dbo",
@@ -773,7 +822,7 @@
                 "table": "CustomerTransactions",
                 "loadTable": "scripts/load_wwi_mssql/load_sales_customertransactions.sql",
                 "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
-                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "dbo",
@@ -797,7 +846,7 @@
                 "table": "InvoiceLines",
                 "loadTable": "scripts/load_wwi_mssql/load_sales_invoicelines.sql",
                 "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
-                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "dbo",
@@ -821,7 +870,7 @@
                 "table": "Invoices",
                 "loadTable": "scripts/load_wwi_mssql/load_sales_invoices.sql",
                 "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
-                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "dbo",
@@ -845,7 +894,7 @@
                 "table": "OrderLines",
                 "loadTable": "scripts/load_wwi_mssql/load_sales_orderlines.sql",
                 "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
-                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "dbo",
@@ -869,7 +918,7 @@
                 "table": "Orders",
                 "loadTable": "scripts/load_wwi_mssql/load_sales_orders.sql",
                 "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
-                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "dbo",
@@ -883,6 +932,30 @@
                 "deleteByLastLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_last_load_date.sql",
                 "specificColumnTypes": [],
                 "testLoadTable": "scripts/load_wwi_mssql/tests/load_sales_orders.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
+            }
+        },
+        {
+            "name": "SalesSpecialDeals",
+            "source": {
+                "schema": "Sales",
+                "table": "SpecialDeals",
+                "loadTable": "scripts/load_wwi_mssql/load_sales_specialdeals.sql",
+                "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
+            },
+            "destination": {
+                "schema": "dbo",
+                "table": "Sales_SpecialDeals",
+                "stagingTable": "Sales_SpecialDeals_Staging",
+                "createTable": "scripts/load_wwi_mssql/create_sales_specialdeals.sql",
+                "modifyTable": [],
+                "insertTable": "scripts/load_wwi_mssql/insert_record.sql",
+                "dropTable": "scripts/load_wwi_mssql/drop_table.sql",
+                "dropColumn": "scripts/load_wwi_mssql/drop_column.sql",
+                "deleteByLastLoadDateTable": "scripts/load_wwi_mssql/delete_record_by_last_load_date.sql",
+                "specificColumnTypes": [],
+                "testLoadTable": "scripts/load_wwi_mssql/tests/load_sales_specialdeals.sql",
                 "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
             }
         },
@@ -1037,7 +1110,7 @@
                 "table": "StockItemHoldings",
                 "loadTable": "scripts/load_wwi_mssql/load_warehouse_stockitemholdings.sql",
                 "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
-                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "dbo",
@@ -1109,7 +1182,7 @@
                 "table": "StockItemStockGroups",
                 "loadTable": "scripts/load_wwi_mssql/load_warehouse_stockitemstockgroups.sql",
                 "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
-                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "dbo",
@@ -1133,7 +1206,7 @@
                 "table": "StockItemTransactions",
                 "loadTable": "scripts/load_wwi_mssql/load_warehouse_stockitemtransactions.sql",
                 "fetchNumRecords": "scripts/load_wwi_mssql/fetch_num_records.sql",
-                "testCountTable": "scripts/load_wwi_mssql/tests/lasteditedwhen_record_count.sql"
+                "testCountTable": "scripts/load_wwi_mssql/tests/validrange_record_count.sql"
             },
             "destination": {
                 "schema": "dbo",
@@ -1153,9 +1226,5 @@
     ],
     "test": true,
     "testRecordCount": 10,
-    "loadTableExists": "scripts/load_wwi_mssql/load_table_exists.sql", 
-    "loadArchiveConfig": {
-        "sourcePath": "scripts/load/",
-        "destinationPath": "load_wwi_archive/"
-    }
+    "loadTableExists": "scripts/load_wwi_mssql/load_table_exists.sql"
 }

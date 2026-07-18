@@ -1,9 +1,10 @@
 {
+    "environment": "development",
     "initialCutoffDate": "2012-12-31 00:00:00",
     "cutoffDate": "",
-    "gcpCredential": "../resources/credentials/bigquery_token.json",
+    "gcpCredential": "/dags/credentials/bigquery_token.json",
     "sparkMaster": "spark://spark-master:7077",
-    "sparkJars": "/opt/airflow/resources/jars/mssql-jdbc-13.2.0.jre11.jar",
+    "sparkJars": ["/dags/process_wwi_archive/resources/jars/mssql-jdbc-13.2.0.jre11.jar"],
     "sparkExecutorMemory": "3g",
     "sparkDriverMemory": "3g",
     "sparkExecutorCores": "2",
@@ -32,9 +33,9 @@
     },
     "destination": {
         "databaseType": "spark-mssql",
-        "database": "WideWorldImportersDW",
-        "conn_mssql": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDW;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes",
-        "conn": "jdbc:sqlserver://host.docker.internal;database=WideWorldImportersDW;user=sa;password=PP@$$w0rd;trustServerCertificate=true;"
+        "database": "WideWorldImportersDWDev",
+        "conn_mssql": "DRIVER={ODBC Driver 18 for SQL Server};SERVER=host.docker.internal,1433;DATABASE=WideWorldImportersDWDev;UID=sa;PWD=PP@$$w0rd;TrustServerCertificate=yes",
+        "conn": "jdbc:sqlserver://host.docker.internal;database=WideWorldImportersDWDev;user=sa;password=PP@$$w0rd;trustServerCertificate=true;"
     },
     "warehouseHistory": {
         "schema": "dbo",
@@ -73,8 +74,10 @@
     },
     "rollBack": {
         "rollbackDropRecordsTable": "scripts/warehouse_wwi_mssql/rollback_drop_records.sql",
+        "rollbackDropRecordsFinalTable": "scripts/warehouse_wwi_mssql/rollback_drop_records_final.sql",
         "rollbackRecreateTable": "scripts/warehouse_wwi_mssql/rollback_recreate_table.sql",
-        "rollbackDropTable": "scripts/warehouse_wwi_mssql/rollback_drop_table.sql"
+        "rollbackDropTable": "scripts/warehouse_wwi_mssql/rollback_drop_table.sql",
+        "rollbackDropFinalTable": "scripts/warehouse_wwi_mssql/rollback_drop_table_final.sql"
     },
     "dimensionTables": [
         {
