@@ -1,9 +1,9 @@
 {
-    "version": 2,
-    "cutoffDate": "2014-01-01 00:00:00",
-    "environment": "development_mssql_2014-01-01",
+    "version": 1,
+    "cutoffDate": "2013-01-01 00:00:00",
+    "environment": "development_mssql_2013-01-01",
     "noOfWorkers": 2,
-    "newCutoffDate": "2014-01-01 00:00:00",
+    "newCutoffDate": "",
     "loadDirectories": {
         "copy": [
             {

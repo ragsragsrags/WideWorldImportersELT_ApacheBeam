@@ -69,12 +69,12 @@ For ci/cd, I'm using github as my repository.
         + if dag version of new release is > than the existing dag version, it will update the dag files and its dependencies.
     - process_wwi: this will have the following process:
         + it will check if github has a new release
-        + if new release is found, it will download and archive the new release and use the archive as code base for the pipeline
-        + if new release is not found, it will use the latest archive with the same release
+        + if new release is found, it will download the new release
+        + if dag version of new release is > than the existing dag version, it will archive the new release and use the archive as code base for the pipeline. otherwise, it will use the latest archive with the existing dag version.  this is only to double check if new release has the same dag version with existing dag version in case update of dag files and its dependencies failed or not build.
 + For this project:
-    - Changes goes to development first with series of version increments if there are a lot of changes when testing.  Then it goes to the main branch.
-    - Releases should ideally not be removed and created with the same tag name but an increment of the version.  If you remove releases, you also need to remove the archive files in the /process_wwi_archive/releases folders.
-    - Also, it is ideal to have one environment per branch so you can simulate development -> main.  The development branch should have "development" as it's environment in the application_settings.config while main branch should have "production".  In github desktop, you can easily switch from development to main so need to rebuild your docker compose, unless you have changes in your docker compose so you need to rebuild it.
+    - Changes goes to development first with series of version increments if there are a lot of changes during testing.  Then it goes to the main branch.
+    - Releases should ideally not be removed and created with the same tag name but an increment of the version.  If you remove releases to simulate unit testing, you also need to remove the archive files in the /process_wwi_archive/releases folders.
+    - Also, it is ideal to have one environment per branch so you can simulate development -> main.  The development branch should have "development" as it's environment in the application_settings.config while main branch should have "production".  In github desktop, you can easily switch from development to main so no need to rebuild your docker compose, unless you have changes in your docker compose so you need to rebuild it.
 
 Instructions for Sql Server and WWI databases
 + Download and install SSMS from: https://learn.microsoft.com/en-us/ssms/install/install
@@ -124,34 +124,15 @@ Instructions for Airflow Orchestration
             - This 
         + environment: This is the environment of the config file.  
             - If value is "development_mssql_2013-01-01", it will reference the "/notebooks/load/load_wwi_development_mssql_2013-01-01.json" config file with it added as suffix to the base config file.
-            - The following are sample environments/config files:
-                + jdbc mssql 
-                    + load
-                        - development_mssql_2013-01-01: load_wwi_development_mssql_2013-01-01.json
-                        - development_mssql_2014-01-01: load_wwi_development_mssql_2014-01-01.json
-                        - development_mssql_latest: load_wwi_development_mssql_latest.json
-                    + warehouse
-                        - development_mssql_2013-01-01: warehouse_wwi_development_mssql_2013-01-01.json
-                        - development_mssql_2014-01-01: warehouse_wwi_development_mssql_2014-01-01.json
-                        - development_mssql_latest: warehouse_wwi_development_mssql_latest.json
-                + spark mssql 
-                    - load
-                        + development_spark_mssql_2013-01-01: load_wwi_development_spark_mssql_2013-01-01.json
-                        + development_spark_mssql_2014-01-01: load_wwi_development_spark_mssql_2014-01-01.json
-                        + development_spark_mssql_latest: load_wwi_development_spark_mssql_latest.json
-                    - warehouse
-                        + development_spark_mssql_2013-01-01: warehouse_wwi_development_spark_mssql_2013-01-01.json
-                        + development_spark_mssql_2014-01-01: warehouse_wwi_development_spark_mssql_2014-01-01.json
-                        + development_spark_mssql_latest: warehouse_wwi_development_spark_mssql_latest.json
-                + bigquery - combination of spark and bigquery client 
-                    - load
-                        + development_spark_bigquery_2013-01-01: load_wwi_development_spark_bigquery_2013-01-01.json
-                        + development_spark_bigquery_2014-01-01: load_wwi_development_spark_bigquery_2014-01-01.json
-                        + development_spark_bigquery_latest: load_wwi_development_spark_bigquery_latest.json
-                    - warehouse
-                        + development_spark_bigquery_2013-01-01: warehouse_wwi_development_spark_bigquery_2013-01-01.json
-                        + development_spark_bigquery_2014-01-01: warehouse_wwi_development_spark_bigquery_2014-01-01.json
-                        + development_spark_bigquery_latest: warehouse_wwi_development_spark_bigquery_latest.json
+            - The following are sample environments/config files in mssql, spark mssql and bigquery:
+                + load
+                    - 2013-01-01: load_wwi_{environment}.json
+                    - 2014-01-01: load_wwi_{environment}.json
+                    - latest date: load_wwi_{environment}.json
+                + warehouse
+                    - 2013-01-01: warehouse_wwi_{environment}.json
+                    - 2014-01-01: warehouse_wwi_{environment}.json
+                    - latest date: warehouse_wwi_{environment}.json
         + cutoffDate: Specifies the cutoffdate of the process.  The format is YYYY-MM-DD HH:MM:SS, e.g. "2013-01-01 00:00:00". To get the existing date, leave it blank. 
         + noOfWorkers: This is the number of concurrent workers per load or warehouse. If loading with spark, this should match the number of spark workers configured in the docker compose to avoid memory errors. 
         + newCutoffDate: Just leave this
