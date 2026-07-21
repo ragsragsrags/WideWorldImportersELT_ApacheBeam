@@ -1,9 +1,10 @@
 {
+    "environment": "development",
     "initialCutoffDate": "2012-12-31 00:00:00",
     "cutoffDate": "2014-01-01 00:00:00",
-    "gcpCredential": "/opt/airflow/resources/credentials/bigquery_token.json",
+    "gcpCredential": "/dags/credentials/bigquery_token.json",
     "sparkMaster": "spark://spark-master:7077",
-    "sparkJars": "/opt/airflow/resources/jars/mssql-jdbc-13.2.0.jre11.jar,/opt/airflow/resources/jars/spark-bigquery-with-dependencies_2.12-0.42.2.jar",
+    "sparkJars": ["/dags/resources/jars/mssql-jdbc-13.2.0.jre11.jar","/dags/resources/jars/spark-bigquery-with-dependencies_2.12-0.42.2.jar"],
     "sparkExecutorMemory": "3g",
     "sparkDriverMemory": "3g",
     "sparkExecutorCores": "2",

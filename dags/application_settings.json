@@ -16,6 +16,9 @@
             "development": {
                 "configPath": "/dags/process_wwi_rollback.development.json"
             },
+            "development_bq": {
+                "configPath": "/dags/process_wwi_rollback.development_bq.json"
+            },
             "production": {
                 "configPath": "/dags/process_wwi_rollback.production.json"
             }
